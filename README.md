@@ -1,6 +1,6 @@
 # DigitalOcean Manager
 
-This project provides a comprehensive setup for managing multiple web applications and static sites on a single DigitalOcean droplet. It automates many aspects of setup, deployment, and management, utilizing project-specific environments for application isolation.
+! This project provides a comprehensive setup for managing multiple web applications and static sites on a single DigitalOcean droplet. It automates many aspects of setup, deployment, and management, utilizing project-specific environments for application isolation.
 
 ## Prerequisites
 
