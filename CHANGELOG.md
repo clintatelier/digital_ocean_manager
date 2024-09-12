@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.2.0] - 2023-06-22
+
+### Added
+- Integrated DigitalOcean's monitoring and management tools in the initial setup process
+- Enhanced cost considerations section in README.md with detailed pricing information
+- Added droplet_monitoring.md to document DigitalOcean's monitoring and management features
+
+### Changed
+- Updated README.md to reflect the single droplet architecture more accurately
+- Improved initial_setup.py to include DigitalOcean monitoring and management tool setup
+- Enhanced deployment process documentation to reflect the current single droplet approach
+
+### Removed
+- Deleted remnant files related to the previous Kubernetes-based setup:
+  - mobile_apps/template_react_native_app.js
+  - scripts/deploy_mobile_app.py
+  - scripts/deploy_static_site.py
+  - scripts/manage_resources.py
+  - static_sites/Dockerfile.template
+  - web_apps/Dockerfile.template
+- Removed references to mobile app deployments from documentation
+
 ## [2.1.0] - 2023-06-21
 
 ### Added
@@ -80,14 +102,13 @@
 
 1. Implement automated testing for deployment scripts
 2. Add support for SSL certificate management (e.g., using Let's Encrypt)
-3. Integrate a monitoring and logging solution (e.g., Prometheus and Grafana)
-4. Implement automatic backups for the droplet and databases
-5. Add support for database migrations
-6. Enhance security measures, such as implementing firewall rules and fail2ban
-7. Create a web-based dashboard for managing deployments and viewing application status
-8. Implement CI/CD pipelines for automated testing and deployment
-9. Add support for additional programming languages and frameworks
-10. Implement cost optimization strategies, such as using DigitalOcean's floating IPs for high availability
+3. Implement automatic backups for the droplet and databases
+4. Add support for database migrations
+5. Enhance security measures, such as implementing firewall rules and fail2ban
+6. Create a web-based dashboard for managing deployments and viewing application status
+7. Implement CI/CD pipelines for automated testing and deployment
+8. Add support for additional programming languages and frameworks
+9. Implement cost optimization strategies, such as using DigitalOcean's floating IPs for high availability
 
 ## Known Issues
 
@@ -104,7 +125,8 @@ The DigitalOcean Manager now provides a streamlined solution for managing and de
 3. Virtual environment management on the droplet
 4. Apache configuration for hosting multiple applications
 5. Configuration files for different environments
-6. Comprehensive documentation including README.md and VS Code Workflow Integration Guide
+6. Comprehensive documentation including README.md, VS Code Workflow Integration Guide, and droplet monitoring guide
+7. Integration with DigitalOcean's monitoring and management tools
 
 The project is now simplified for single-droplet deployments, offering improved resource utilization and cost-effectiveness. Users can easily set up a droplet, deploy applications, and manage their DigitalOcean resources through a unified interface.
 

@@ -30,6 +30,7 @@ Before using this tool, you need to:
    - Guide you through generating a DigitalOcean API token
    - Create a single DigitalOcean droplet
    - Set up the droplet with necessary software (Python, Node.js, PHP, Apache, MySQL)
+   - Install and configure DigitalOcean monitoring and management tools
    - Install a virtual environment management script on the droplet
 
 4. Activate the virtual environment:
@@ -51,11 +52,12 @@ Before using this tool, you need to:
 - Deployment of web apps and static sites
 - Virtual environment management on the droplet
 - Gathering and outputting comprehensive deployment information
+- Setting up DigitalOcean monitoring and management tools
 
 ### Manual (requires DigitalOcean web interface):
 - Account creation and payment setup
 - API token generation
-- Resource monitoring and cost management
+- Advanced resource monitoring and cost management
 
 ## Usage
 
@@ -187,6 +189,7 @@ Modify these files to suit your project's needs. These configurations help maint
 9. Securely manage the generated deployment information JSON files
 10. Regularly review and update Apache configurations for optimal performance
 11. Use the comprehensive deployment information for troubleshooting and maintenance
+12. Utilize DigitalOcean's built-in monitoring tools to track droplet performance
 
 ## Maintenance
 
@@ -195,6 +198,7 @@ Modify these files to suit your project's needs. These configurations help maint
 - Check for updates to the required Python packages used in your projects
 - Periodically review and optimize your deployed applications for better resource utilization
 - Regularly review and update the gather_deployment_info.py script to ensure it captures all necessary information
+- Monitor and manage your droplet using DigitalOcean's dashboard and CLI tools
 
 ## Support
 
@@ -206,19 +210,25 @@ This tool is not officially associated with DigitalOcean. Always refer to Digita
 
 ## Cost Considerations
 
-Using a single DigitalOcean droplet can be more cost-effective than a Kubernetes cluster:
+Using a single DigitalOcean droplet can be more cost-effective than a Kubernetes cluster. Here's an estimated cost breakdown:
 
-- Droplet: Starting at $5/month (1GB RAM, 1 vCPU, 25GB SSD)
-- Additional storage: From $10/month for 100GB block storage
-- Bandwidth: 1TB included, then $0.01/GB for outbound transfer
+- Basic Droplet (1 GB RAM, 1 vCPU, 25 GB SSD): $5 per month
+- Standard Droplet (2 GB RAM, 1 vCPU, 50 GB SSD): $10 per month
+- Standard Droplet (2 GB RAM, 2 vCPUs, 60 GB SSD): $15 per month
+- Standard Droplet (4 GB RAM, 2 vCPUs, 80 GB SSD): $20 per month
 
-Estimated total for a basic setup with multiple projects: $10-$30/month
+Additional costs to consider:
+- Bandwidth: 1 TB transfer included, $0.01/GB after that
+- Monitoring: Free for basic metrics, $0.007 per hour ($5 per month) for advanced metrics if enabled
+- Backups: 20% of the droplet cost if enabled
+
+Estimated total for a basic setup with multiple projects: $10-$30 per month
 
 To optimize costs:
 1. Monitor resource usage in the DigitalOcean dashboard
-2. Choose an appropriate droplet size
+2. Choose an appropriate droplet size based on your needs
 3. Optimize your applications for efficient resource use
-4. Use DigitalOcean's billing alerts
+4. Use DigitalOcean's billing alerts to stay informed about your spending
 
 Always review DigitalOcean's current pricing: https://www.digitalocean.com/pricing
 
