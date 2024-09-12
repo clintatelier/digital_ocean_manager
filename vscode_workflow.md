@@ -12,7 +12,7 @@ This guide explains how to incorporate the DigitalOcean Manager into your develo
 ### 1. Local Development
 
 1. Open your project folder in VS Code.
-2. Create or modify your web application or static site in the appropriate directory (`web_apps/` or `static_sites/`).
+2. Create or modify your web application or static site in your local project directory.
 3. Use VS Code's integrated terminal to activate your local virtual environment:
    ```
    source venv/bin/activate  # On macOS/Linux
@@ -44,15 +44,15 @@ This guide explains how to incorporate the DigitalOcean Manager into your develo
 
 ### 4. Syncing Files
 
-1. In the remote VS Code window, open the folder where your application will be deployed (e.g., `/var/www/your-app-name`).
+1. In the remote VS Code window, open the folder where your application will be deployed (e.g., `/opt/projects/your-project-name`).
 2. Use VS Code's built-in file explorer to upload your local files to the remote folder.
 
 ### 5. Testing on the Droplet
 
 1. In the remote VS Code window, open an integrated terminal.
-2. Activate the appropriate virtual environment:
+2. If using virtual environments, activate the appropriate one:
    ```
-   source /opt/venvs/your-app-name/bin/activate
+   source /opt/venvs/your-project-name/bin/activate
    ```
 3. Run your application or start your web server to test.
 
@@ -65,7 +65,7 @@ When you're ready to deploy:
    ```
    python scripts/deploy_web_app.py
    ```
-3. Follow the prompts, using the droplet IP and app name you've been working with.
+3. Follow the prompts, specifying the project name, type, local directory path, and whether to use Docker or virtual environment.
 
 ### 7. Post-Deployment
 

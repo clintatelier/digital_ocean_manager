@@ -53,6 +53,13 @@ def setup_droplet(droplet):
         "snap install doctl",
         # Install DigitalOcean Metrics Agent for advanced metrics
         "curl -sSL https://repos.insights.digitalocean.com/install.sh | sudo bash",
+        # Install Docker for containerization
+        "apt install -y docker.io",
+        "systemctl enable docker",
+        # Install Python package manager
+        "apt install -y python3-pip",
+        # Install Git for version control
+        "apt install -y git",
     ]
     
     for command in commands:
@@ -65,60 +72,132 @@ def setup_droplet(droplet):
     print("Droplet setup completed successfully.")
     return True
 
-def setup_virtual_environments(droplet):
-    print("Setting up virtual environment management...")
-    # Set up a directory for virtual environments
-    try:
-        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", "mkdir -p /opt/venvs"], check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Error creating virtual environments directory: {e}")
-        return False
+def setup_project_management(droplet):
+    print("Setting up project management tools...")
+    commands = [
+        # Create directory structure
+        "mkdir -p /opt/projects",
+        "mkdir -p /opt/venvs",
+        "mkdir -p /opt/configs",
+        
+        # Create project management script
+        """cat << EOF > /usr/local/bin/manage_project.sh
+#!/bin/bash
+
+function create_project() {
+    project_name=\$1
+    project_type=\$2
+    mkdir -p /opt/projects/\$project_name
+    python3 -m venv /opt/venvs/\$project_name
+    echo "{\\"name\\": \\"\$project_name\\", \\"type\\": \\"\$project_type\\"}" > /opt/configs/\$project_name.json
+    echo "Project \$project_name created successfully."
+}
+
+function delete_project() {
+    project_name=\$1
+    rm -rf /opt/projects/\$project_name
+    rm -rf /opt/venvs/\$project_name
+    rm -f /opt/configs/\$project_name.json
+    echo "Project \$project_name deleted successfully."
+}
+
+function list_projects() {
+    echo "Projects:"
+    for config in /opt/configs/*.json; do
+        project_name=\$(basename \$config .json)
+        project_type=\$(jq -r .type \$config)
+        echo "- \$project_name (\$project_type)"
+    done
+}
+
+case \$1 in
+    create)
+        create_project \$2 \$3
+        ;;
+    delete)
+        delete_project \$2
+        ;;
+    list)
+        list_projects
+        ;;
+    *)
+        echo "Usage: \$0 {create|delete|list} [project_name] [project_type]"
+        exit 1
+esac
+EOF""",
+        "chmod +x /usr/local/bin/manage_project.sh"
+    ]
     
-    # Create a script to manage virtual environments
-    venv_script = """#!/bin/bash
+    for command in commands:
+        try:
+            subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", command], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error executing command: {e}")
+            return False
     
-    function create_venv() {
-        python3 -m venv /opt/venvs/$1
-        /opt/venvs/$1/bin/pip install --upgrade pip
-    }
+    print("Project management setup completed successfully.")
+    return True
+
+def setup_do_credentials(droplet):
+    print("Setting up DigitalOcean credentials management...")
+    commands = [
+        # Create credentials management script
+        """cat << EOF > /usr/local/bin/manage_do_credentials.sh
+#!/bin/bash
+
+function set_credentials() {
+    project_name=\$1
+    do_token=\$2
+    echo "{\\"do_token\\": \\"\$do_token\\"}" > /opt/configs/\$project_name\_do_credentials.json
+    echo "DigitalOcean credentials set for project \$project_name."
+}
+
+function get_credentials() {
+    project_name=\$1
+    if [ -f "/opt/configs/\${project_name}_do_credentials.json" ]; then
+        jq -r .do_token "/opt/configs/\${project_name}_do_credentials.json"
+    else
+        echo "No DigitalOcean credentials found for project \$project_name."
+    fi
+}
+
+function delete_credentials() {
+    project_name=\$1
+    rm -f "/opt/configs/\${project_name}_do_credentials.json"
+    echo "DigitalOcean credentials deleted for project \$project_name."
+}
+
+case \$1 in
+    set)
+        set_credentials \$2 \$3
+        ;;
+    get)
+        get_credentials \$2
+        ;;
+    delete)
+        delete_credentials \$2
+        ;;
+    *)
+        echo "Usage: \$0 {set|get|delete} [project_name] [do_token]"
+        exit 1
+esac
+EOF""",
+        "chmod +x /usr/local/bin/manage_do_credentials.sh"
+    ]
     
-    function delete_venv() {
-        rm -rf /opt/venvs/$1
-    }
+    for command in commands:
+        try:
+            subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", command], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error executing command: {e}")
+            return False
     
-    function list_venvs() {
-        ls -l /opt/venvs
-    }
-    
-    case $1 in
-        create)
-            create_venv $2
-            ;;
-        delete)
-            delete_venv $2
-            ;;
-        list)
-            list_venvs
-            ;;
-        *)
-            echo "Usage: $0 {create|delete|list} [venv_name]"
-            exit 1
-    esac
-    """
-    
-    try:
-        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", f"echo '{venv_script}' > /usr/local/bin/manage_venv.sh"], check=True)
-        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", "chmod +x /usr/local/bin/manage_venv.sh"], check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Error creating virtual environment management script: {e}")
-        return False
-    
-    print("Virtual environment management script created successfully.")
+    print("DigitalOcean credentials management setup completed successfully.")
     return True
 
 def main():
     print("Welcome to the DigitalOcean Droplet Setup!")
-    print("This script will guide you through creating and setting up your droplet.")
+    print("This script will guide you through creating and setting up your droplet for multi-project hosting.")
     
     token = os.getenv("DO_TOKEN")
     if not token:
@@ -158,19 +237,23 @@ def main():
         print("Failed to set up droplet. Please check the error messages above and try again.")
         return
 
-    if not setup_virtual_environments(droplet):
-        print("Failed to set up virtual environments. Please check the error messages above and try again.")
+    if not setup_project_management(droplet):
+        print("Failed to set up project management. Please check the error messages above and try again.")
+        return
+
+    if not setup_do_credentials(droplet):
+        print("Failed to set up DigitalOcean credentials management. Please check the error messages above and try again.")
         return
     
     print("\nInitial setup complete!")
     print(f"Your droplet is ready to use at IP: {droplet.ip_address}")
-    print("\nTo manage virtual environments on your droplet, use the following command:")
-    print(f"ssh root@{droplet.ip_address} '/usr/local/bin/manage_venv.sh [create|delete|list] [venv_name]'")
-    print("\nFor example, to create a new virtual environment named 'myapp':")
-    print(f"ssh root@{droplet.ip_address} '/usr/local/bin/manage_venv.sh create myapp'")
+    print("\nTo manage projects on your droplet, use the following command:")
+    print(f"ssh root@{droplet.ip_address} '/usr/local/bin/manage_project.sh [create|delete|list] [project_name] [project_type]'")
+    print("\nTo manage DigitalOcean credentials for projects, use the following command:")
+    print(f"ssh root@{droplet.ip_address} '/usr/local/bin/manage_do_credentials.sh [set|get|delete] [project_name] [do_token]'")
     print("\nDigitalOcean monitoring and management tools have been enabled for your droplet.")
     print("You can view monitoring data and manage your droplet in the DigitalOcean dashboard.")
-    print("\nPlease refer to the README.md and droplet_monitoring.md files for more information on how to use, monitor, and manage your new droplet.")
+    print("\nPlease refer to the README.md and droplet_monitoring.md files for more information on how to use, monitor, and manage your new multi-project droplet.")
 
 if __name__ == "__main__":
     main()

@@ -71,7 +71,7 @@ def run_initial_setup(venv_python):
 
 def main():
     print("Welcome to the DigitalOcean Manager setup!")
-    print("This script will guide you through the initial setup process.")
+    print("This script will guide you through the initial setup process for managing multiple projects on a single DigitalOcean droplet.")
     print("If you encounter any issues, please refer to the README.md file or contact support.")
 
     input("Press Enter to begin the setup process...")
@@ -103,7 +103,11 @@ def main():
     print("\nNext steps:")
     print("1. Activate the virtual environment")
     print("2. Review the README.md file for detailed usage instructions.")
-    print("3. Use the scripts in the 'scripts' directory to deploy your applications.")
+    print("3. Use the scripts in the 'scripts' directory to manage and deploy your projects:")
+    print("   - Create a new project: ssh root@<droplet_ip> '/usr/local/bin/manage_project.sh create <project_name> <project_type>'")
+    print("   - Deploy a project: python scripts/deploy_web_app.py")
+    print("   - Manage DigitalOcean credentials: ssh root@<droplet_ip> '/usr/local/bin/manage_do_credentials.sh [set|get|delete] <project_name> [do_token]'")
+    print("4. Gather deployment information: python scripts/gather_deployment_info.py")
     print("\nRemember to monitor your resource usage and costs through the DigitalOcean dashboard:")
     print("https://cloud.digitalocean.com/dashboard")
     
