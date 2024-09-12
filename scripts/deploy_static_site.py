@@ -1,53 +1,120 @@
-import digitalocean
 import os
-import paramiko
+import subprocess
+import yaml
+from kubernetes import client, config
 
-def deploy_static_site(site_name, droplet_id, ssh_key_path):
-    # Initialize DigitalOcean client
-    token = os.getenv('DO_TOKEN')
-    manager = digitalocean.Manager(token=token)
-
-    # Get the droplet
-    droplet = manager.get_droplet(droplet_id)
-
-    # Connect to the droplet via SSH
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(droplet.ip_address, username='root', key_filename=ssh_key_path)
-
-    # Deploy the static site (example commands, adjust as needed)
-    ssh.exec_command(f'mkdir -p /var/www/{site_name}')
-    sftp = ssh.open_sftp()
-    local_path = f'../static_sites/{site_name}/'
-    remote_path = f'/var/www/{site_name}/'
+def build_and_push_image(site_name, registry):
+    # Build the Docker image
+    subprocess.run(["docker", "build", "-t", f"{registry}/{site_name}:latest", f"../static_sites/{site_name}"], check=True)
     
-    for root, dirs, files in os.walk(local_path):
-        for file in files:
-            local_file = os.path.join(root, file)
-            remote_file = os.path.join(remote_path, os.path.relpath(local_file, local_path))
-            sftp.put(local_file, remote_file)
+    # Push the image to the registry
+    subprocess.run(["docker", "push", f"{registry}/{site_name}:latest"], check=True)
 
-    sftp.close()
+def create_kubernetes_manifests(site_name, registry):
+    # Create deployment YAML
+    deployment = {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {"name": site_name},
+        "spec": {
+            "replicas": 1,
+            "selector": {"matchLabels": {"app": site_name}},
+            "template": {
+                "metadata": {"labels": {"app": site_name}},
+                "spec": {
+                    "containers": [{
+                        "name": site_name,
+                        "image": f"{registry}/{site_name}:latest",
+                        "ports": [{"containerPort": 80}]
+                    }]
+                }
+            }
+        }
+    }
 
-    # Configure Nginx (example configuration, adjust as needed)
-    nginx_config = f"""
-    server {{
-        listen 80;
-        server_name {site_name};
-        root /var/www/{site_name};
-        index index.html;
-    }}
-    """
-    ssh.exec_command(f'echo "{nginx_config}" > /etc/nginx/sites-available/{site_name}')
-    ssh.exec_command(f'ln -s /etc/nginx/sites-available/{site_name} /etc/nginx/sites-enabled/')
-    ssh.exec_command('nginx -t && systemctl reload nginx')
+    # Create service YAML
+    service = {
+        "apiVersion": "v1",
+        "kind": "Service",
+        "metadata": {"name": f"{site_name}-service"},
+        "spec": {
+            "selector": {"app": site_name},
+            "ports": [{"port": 80, "targetPort": 80}],
+            "type": "ClusterIP"
+        }
+    }
 
-    ssh.close()
+    # Create ingress YAML
+    ingress = {
+        "apiVersion": "networking.k8s.io/v1",
+        "kind": "Ingress",
+        "metadata": {
+            "name": f"{site_name}-ingress",
+            "annotations": {
+                "kubernetes.io/ingress.class": "nginx",
+                "cert-manager.io/cluster-issuer": "letsencrypt-prod"
+            }
+        },
+        "spec": {
+            "rules": [{
+                "host": f"{site_name}.example.com",
+                "http": {
+                    "paths": [{
+                        "path": "/",
+                        "pathType": "Prefix",
+                        "backend": {
+                            "service": {
+                                "name": f"{site_name}-service",
+                                "port": {"number": 80}
+                            }
+                        }
+                    }]
+                }
+            }],
+            "tls": [{
+                "hosts": [f"{site_name}.example.com"],
+                "secretName": f"{site_name}-tls"
+            }]
+        }
+    }
 
-    print(f"Static site {site_name} deployed successfully to droplet {droplet_id}")
+    # Write manifests to files
+    with open(f"{site_name}-deployment.yaml", "w") as f:
+        yaml.dump(deployment, f)
+    with open(f"{site_name}-service.yaml", "w") as f:
+        yaml.dump(service, f)
+    with open(f"{site_name}-ingress.yaml", "w") as f:
+        yaml.dump(ingress, f)
+
+def apply_kubernetes_manifests(site_name):
+    # Apply the Kubernetes manifests
+    subprocess.run(["kubectl", "apply", "-f", f"{site_name}-deployment.yaml"], check=True)
+    subprocess.run(["kubectl", "apply", "-f", f"{site_name}-service.yaml"], check=True)
+    subprocess.run(["kubectl", "apply", "-f", f"{site_name}-ingress.yaml"], check=True)
+
+def deploy_static_site(site_name, registry):
+    try:
+        # Build and push Docker image
+        build_and_push_image(site_name, registry)
+
+        # Create Kubernetes manifest files
+        create_kubernetes_manifests(site_name, registry)
+
+        # Apply Kubernetes manifests
+        apply_kubernetes_manifests(site_name)
+
+        print(f"Static site {site_name} deployed successfully to Kubernetes cluster")
+        print(f"Access your site at: https://{site_name}.example.com")
+    except subprocess.CalledProcessError as e:
+        print(f"Error deploying static site: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
 
 if __name__ == '__main__':
+    # Load Kubernetes configuration
+    config.load_kube_config()
+
     site_name = input("Enter the name of your static site: ")
-    droplet_id = input("Enter the ID of the target droplet: ")
-    ssh_key_path = input("Enter the path to your SSH private key: ")
-    deploy_static_site(site_name, droplet_id, ssh_key_path)
+    registry = input("Enter your DigitalOcean container registry (e.g., registry.digitalocean.com/your-registry): ")
+    
+    deploy_static_site(site_name, registry)

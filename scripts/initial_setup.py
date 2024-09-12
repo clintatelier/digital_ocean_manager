@@ -1,102 +1,62 @@
-import digitalocean
+import os
+import subprocess
 import time
+from digitalocean import Manager, KubernetesCluster
 
-class DigitalOceanManager:
-    def __init__(self, api_token):
-        self.manager = digitalocean.Manager(token=api_token)
+def create_kubernetes_cluster(token, cluster_name, region, node_pool_name, node_size, node_count):
+    manager = Manager(token=token)
+    
+    # Create the Kubernetes cluster
+    cluster = KubernetesCluster(
+        token=token,
+        name=cluster_name,
+        region=region,
+        version="latest",
+        node_pools=[
+            {
+                "size": node_size,
+                "count": node_count,
+                "name": node_pool_name,
+            }
+        ],
+    )
+    
+    cluster.create()
+    
+    # Wait for the cluster to be ready
+    while cluster.status['state'] != 'running':
+        time.sleep(30)
+        cluster.load()
+    
+    print(f"Kubernetes cluster '{cluster_name}' created successfully.")
+    return cluster
 
-    def create_droplet(self, name, region, size, image):
-        droplet = digitalocean.Droplet(
-            token=self.manager.token,
-            name=name,
-            region=region,
-            size=size,
-            image=image
-        )
-        droplet.create()
-        return droplet
+def configure_kubectl(cluster):
+    # Use doctl to configure kubectl
+    subprocess.run(["doctl", "kubernetes", "cluster", "kubeconfig", "save", cluster.id], check=True)
+    print("kubectl configured successfully.")
 
-    def create_database_cluster(self, name, engine, size, region, num_nodes):
-        cluster = digitalocean.DatabaseCluster(
-            token=self.manager.token,
-            name=name,
-            engine=engine,
-            version="14",  # or latest version
-            size=size,
-            region=region,
-            num_nodes=num_nodes
-        )
-        cluster.create()
-        return cluster
-
-    def setup_firewall(self, name, droplet_ids=None):
-        firewall = digitalocean.Firewall(
-            token=self.manager.token,
-            name=name,
-            inbound_rules=[
-                {
-                    "protocol": "tcp",
-                    "ports": "80",
-                    "sources": {"addresses": ["0.0.0.0/0", "::/0"]}
-                },
-                {
-                    "protocol": "tcp",
-                    "ports": "443",
-                    "sources": {"addresses": ["0.0.0.0/0", "::/0"]}
-                },
-                {
-                    "protocol": "tcp",
-                    "ports": "22",
-                    "sources": {"addresses": ["0.0.0.0/0", "::/0"]}
-                }
-            ],
-            outbound_rules=[
-                {
-                    "protocol": "tcp",
-                    "ports": "all",
-                    "destinations": {"addresses": ["0.0.0.0/0", "::/0"]}
-                }
-            ],
-            droplet_ids=droplet_ids
-        )
-        firewall.create()
-        return firewall
+def install_ingress_controller():
+    # Install NGINX Ingress Controller
+    subprocess.run(["kubectl", "apply", "-f", "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.0/deploy/static/provider/do/deploy.yaml"], check=True)
+    print("NGINX Ingress Controller installed successfully.")
 
 def main():
-    api_token = input("Enter your DigitalOcean API token: ")
-    do_manager = DigitalOceanManager(api_token)
-
-    # Create a droplet
-    droplet = do_manager.create_droplet(
-        name="my-web-server",
-        region="nyc1",
-        size="s-1vcpu-1gb",
-        image="ubuntu-20-04-x64"
-    )
-    print(f"Droplet created: {droplet.name} (ID: {droplet.id})")
-
-    # Wait for the droplet to be active
-    while droplet.status != "active":
-        time.sleep(5)
-        droplet.load()
-
-    # Create a database cluster
-    cluster = do_manager.create_database_cluster(
-        name="my-db-cluster",
-        engine="pg",
-        size="db-s-1vcpu-1gb",
-        region="nyc1",
-        num_nodes=1
-    )
-    print(f"Database cluster created: {cluster.name} (ID: {cluster.id})")
-
-    # Setup firewall
-    firewall = do_manager.setup_firewall("my-firewall", droplet_ids=[droplet.id])
-    print(f"Firewall created: {firewall.name} (ID: {firewall.id})")
-
-    print("\nSetup complete!")
-    print(f"Droplet IP: {droplet.ip_address}")
-    print(f"Database connection string: {cluster.connection_string}")
+    token = os.getenv("DO_TOKEN")
+    if not token:
+        raise ValueError("DigitalOcean API token not found. Please set the DO_TOKEN environment variable.")
+    
+    cluster_name = input("Enter the name for your Kubernetes cluster: ")
+    region = input("Enter the region for your cluster (e.g., nyc1): ")
+    node_pool_name = input("Enter a name for the node pool: ")
+    node_size = input("Enter the size for the nodes (e.g., s-2vcpu-4gb): ")
+    node_count = int(input("Enter the number of nodes: "))
+    
+    cluster = create_kubernetes_cluster(token, cluster_name, region, node_pool_name, node_size, node_count)
+    configure_kubectl(cluster)
+    install_ingress_controller()
+    
+    print("Initial setup complete. Your Kubernetes cluster is ready to use.")
 
 if __name__ == "__main__":
     main()

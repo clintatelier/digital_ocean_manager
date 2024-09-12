@@ -1,32 +1,82 @@
-import digitalocean
 import os
-import paramiko
+import subprocess
+import yaml
+from kubernetes import client, config
 
-def deploy_web_app(app_name, droplet_id, ssh_key_path):
-    # Initialize DigitalOcean client
-    token = os.getenv('DO_TOKEN')
-    manager = digitalocean.Manager(token=token)
+def build_and_push_image(app_name, registry):
+    # Build the Docker image
+    subprocess.run(["docker", "build", "-t", f"{registry}/{app_name}:latest", f"../web_apps/{app_name}"], check=True)
+    
+    # Push the image to the registry
+    subprocess.run(["docker", "push", f"{registry}/{app_name}:latest"], check=True)
 
-    # Get the droplet
-    droplet = manager.get_droplet(droplet_id)
+def create_kubernetes_manifests(app_name, registry):
+    # Create deployment YAML
+    deployment = {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {"name": app_name},
+        "spec": {
+            "replicas": 1,
+            "selector": {"matchLabels": {"app": app_name}},
+            "template": {
+                "metadata": {"labels": {"app": app_name}},
+                "spec": {
+                    "containers": [{
+                        "name": app_name,
+                        "image": f"{registry}/{app_name}:latest",
+                        "ports": [{"containerPort": 8000}]
+                    }]
+                }
+            }
+        }
+    }
 
-    # Connect to the droplet via SSH
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(droplet.ip_address, username='root', key_filename=ssh_key_path)
+    # Create service YAML
+    service = {
+        "apiVersion": "v1",
+        "kind": "Service",
+        "metadata": {"name": f"{app_name}-service"},
+        "spec": {
+            "selector": {"app": app_name},
+            "ports": [{"port": 80, "targetPort": 8000}],
+            "type": "ClusterIP"
+        }
+    }
 
-    # Deploy the web app (example commands, adjust as needed)
-    ssh.exec_command(f'git clone https://github.com/yourusername/{app_name}.git')
-    ssh.exec_command(f'cd {app_name} && pip install -r requirements.txt')
-    ssh.exec_command(f'cd {app_name} && python manage.py migrate')
-    ssh.exec_command(f'cd {app_name} && gunicorn {app_name}.wsgi:application')
+    # Write manifests to files
+    with open(f"{app_name}-deployment.yaml", "w") as f:
+        yaml.dump(deployment, f)
+    with open(f"{app_name}-service.yaml", "w") as f:
+        yaml.dump(service, f)
 
-    ssh.close()
+def apply_kubernetes_manifests(app_name):
+    # Apply the Kubernetes manifests
+    subprocess.run(["kubectl", "apply", "-f", f"{app_name}-deployment.yaml"], check=True)
+    subprocess.run(["kubectl", "apply", "-f", f"{app_name}-service.yaml"], check=True)
 
-    print(f"Web app {app_name} deployed successfully to droplet {droplet_id}")
+def deploy_web_app(app_name, registry):
+    try:
+        # Build and push Docker image
+        build_and_push_image(app_name, registry)
+
+        # Create Kubernetes manifest files
+        create_kubernetes_manifests(app_name, registry)
+
+        # Apply Kubernetes manifests
+        apply_kubernetes_manifests(app_name)
+
+        print(f"Web app {app_name} deployed successfully to Kubernetes cluster")
+    except subprocess.CalledProcessError as e:
+        print(f"Error deploying web app: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
 
 if __name__ == '__main__':
+    # Load Kubernetes configuration
+    config.load_kube_config()
+
     app_name = input("Enter the name of your web app: ")
-    droplet_id = input("Enter the ID of the target droplet: ")
-    ssh_key_path = input("Enter the path to your SSH private key: ")
-    deploy_web_app(app_name, droplet_id, ssh_key_path)
+    registry = input("Enter your DigitalOcean container registry (e.g., registry.digitalocean.com/your-registry): ")
+    
+    deploy_web_app(app_name, registry)
