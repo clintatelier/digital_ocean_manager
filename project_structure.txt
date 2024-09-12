@@ -1,0 +1,1597 @@
+
+# File: .gitignore
+```
+# Virtual Environment
+venv/
+env/
+
+# Environment variables and API keys
+
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE specific files
+.vscode/
+.idea/
+
+# Compiled Python files
+*.pyc
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+```
+
+
+# File: droplet_monitoring.md
+```
+# DigitalOcean Droplet Monitoring and Management
+
+The initial setup of the DigitalOcean droplet in this project includes the configuration of DigitalOcean's built-in monitoring and management features. This ensures that users can easily monitor and manage their droplets through the DigitalOcean dashboard and command-line interface without any additional setup required.
+
+## Included Features
+
+1. **CPU, Memory, and Disk Monitoring**: Real-time metrics for CPU usage, memory utilization, and disk space are automatically collected and displayed in the DigitalOcean dashboard.
+
+2. **Network Traffic Monitoring**: Inbound and outbound network traffic is monitored and visualized, helping you track bandwidth usage and identify potential issues.
+
+3. **Alerting**: Pre-configured alerts for critical events such as high CPU usage, low disk space, or unexpected droplet shutdowns are set up by default.
+
+4. **Graphs and Metrics**: Visual representations of various performance metrics are available in the DigitalOcean dashboard, allowing for easy trend analysis.
+
+5. **Load Average Monitoring**: The system load average is tracked, helping you identify periods of high demand on your droplet.
+
+6. **Process Management**: The ability to view and manage running processes directly from the DigitalOcean dashboard is enabled.
+
+7. **Droplet Graphs**: Custom graphs for additional metrics specific to your applications can be created and viewed in the dashboard.
+
+8. **Team Access**: If you're using DigitalOcean Teams, appropriate access levels for monitoring and management are pre-configured.
+
+9. **DigitalOcean CLI (doctl)**: The DigitalOcean command-line interface is installed, allowing for management of your droplet directly from the command line.
+
+10. **Advanced Metrics**: The DigitalOcean Metrics Agent is installed, providing more detailed and customizable metrics for your droplet.
+
+## Integration with Project Workflow
+
+These monitoring and management features work seamlessly with the entire project setup:
+
+- The `initial_setup.py` script ensures that all necessary agents and configurations for these features are properly installed and enabled on the droplet, including:
+  - DigitalOcean Monitoring Agent
+  - DigitalOcean CLI (doctl)
+  - DigitalOcean Metrics Agent
+- The droplet is created with the "managed" tag, enabling enhanced management features.
+- The `gather_deployment_info.py` script includes relevant monitoring information in its output, allowing for easy integration with external monitoring tools if needed.
+- The VS Code workflow (as described in `vscode_workflow.md`) is fully compatible with these monitoring and management features, allowing developers to check on droplet health and manage resources directly from their development environment.
+
+## Accessing Monitoring and Management Features
+
+To access these features:
+
+1. Log in to your DigitalOcean account
+2. Navigate to the Droplets section
+3. Select your project's droplet
+4. Use the sidebar to access various monitoring and management tools
+
+For command-line management:
+- Use the `doctl` command on your local machine or on the droplet itself to manage DigitalOcean resources
+
+No additional setup or configuration is required – everything is ready to use immediately after the initial droplet setup.
+
+## Edge Cases and Micro-Elements
+
+The setup process accounts for various edge cases and micro-elements to ensure smooth operation:
+
+- Firewall rules are automatically configured to allow monitoring data to be securely transmitted.
+- The setup is resilient to network interruptions during initial configuration.
+- Monitoring and management tool updates are automatically handled to ensure you always have the latest features.
+- Custom application metrics can be easily added without interfering with the pre-configured monitoring setup.
+- The "managed" tag allows for easy identification and bulk operations on managed droplets.
+
+By leveraging these built-in DigitalOcean features, this project provides a comprehensive solution that covers both application deployment and infrastructure management, ensuring that all aspects of your droplet are easily monitored and managed from both the web interface and command line.
+```
+
+
+# File: project_structure.txt
+```
+
+```
+
+
+# File: project_structure_collector.py
+```
+import os
+import sys
+
+def collect_project_structure(root_dir):
+    output = []
+    
+    for dirpath, dirnames, filenames in os.walk(root_dir):
+        # Skip .git directories
+        if '.git' in dirpath:
+            continue
+        
+        # Add directory structure
+        relative_path = os.path.relpath(dirpath, root_dir)
+        if relative_path != '.':
+            output.append(f"\n# Directory: {relative_path}")
+        
+        # Add file contents
+        for filename in filenames:
+            # Skip .git files
+            if filename.endswith('.git'):
+                continue
+            
+            file_path = os.path.join(dirpath, filename)
+            relative_file_path = os.path.relpath(file_path, root_dir)
+            
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                    output.append(f"\n# File: {relative_file_path}\n```\n{content}\n```\n")
+            except Exception as e:
+                output.append(f"\n# File: {relative_file_path}\n```\nError reading file: {str(e)}\n```\n")
+    
+    return "\n".join(output)
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python project_structure_collector.py <output_file>")
+        sys.exit(1)
+    
+    root_dir = os.getcwd()
+    output_file = sys.argv[1]
+    
+    project_structure = collect_project_structure(root_dir)
+    
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(project_structure)
+    
+    print(f"Project structure and contents have been written to {output_file}")
+```
+
+
+# File: project_summary.md
+```
+# DigitalOcean Manager: Project Summary
+
+## Overview
+
+The DigitalOcean Manager is a comprehensive solution for deploying and managing multiple projects, including web applications and static sites, using a single DigitalOcean droplet. This project provides a streamlined workflow for setting up infrastructure, deploying applications, and managing them on a cost-effective single-droplet setup, with integrated monitoring and management tools.
+
+## Current Project Structure
+
+```
+digital_ocean_manager/
+├── config/
+│   ├── development.env
+│   ├── staging.env
+│   └── production.env
+├── scripts/
+│   ├── deploy_web_app.py
+│   ├── gather_deployment_info.py
+│   └── initial_setup.py
+├── CHANGELOG.md
+├── README.md
+├── requirements.txt
+├── setup.py
+├── droplet_monitoring.md
+├── vscode_workflow.md
+└── project_summary.md (this file)
+```
+
+## Key Components and Their Purposes
+
+1. **config/**: Contains environment-specific configuration files for development, staging, and production.
+
+2. **scripts/**:
+   - `initial_setup.py`: Sets up the initial DigitalOcean droplet, configures it with necessary software, enables monitoring and management tools, and installs project management and DigitalOcean credentials management scripts.
+   - `deploy_web_app.py`: Deploys various project types (Python, Node.js, PHP, static) to the DigitalOcean droplet.
+   - `gather_deployment_info.py`: Collects and outputs comprehensive deployment information for each project.
+
+3. **CHANGELOG.md**: Documents the project's version history and changes.
+
+4. **README.md**: Provides an overview, usage instructions, and cost considerations for the project.
+
+5. **requirements.txt**: Lists the Python dependencies required for the project.
+
+6. **setup.py**: Handles the initial setup process, including virtual environment creation and dependency installation.
+
+7. **droplet_monitoring.md**: Documents the integrated DigitalOcean monitoring and management features.
+
+8. **vscode_workflow.md**: Provides a guide for integrating the project with Visual Studio Code for improved developer experience.
+
+## How to Use the DigitalOcean Manager
+
+1. **Initial Setup**:
+   - Clone the repository and navigate to the project directory.
+   - Run `python setup.py` to set up the virtual environment and install dependencies.
+   - Follow the prompts to create and configure your DigitalOcean droplet with integrated monitoring and management tools.
+
+2. **Managing Projects**:
+   - Use the `manage_project.sh` script on the droplet to create, delete, or list projects.
+
+3. **Managing DigitalOcean Credentials**:
+   - Use the `manage_do_credentials.sh` script on the droplet to set, get, or delete DigitalOcean API tokens for specific projects.
+
+4. **Deploying Projects**:
+   - Prepare your project files in a local directory.
+   - Run `python scripts/deploy_web_app.py` and follow the prompts to deploy your project.
+
+5. **Gathering Deployment Information**:
+   - Use `python scripts/gather_deployment_info.py` to collect and output comprehensive deployment information for your projects.
+
+6. **Monitoring and Managing**:
+   - Utilize DigitalOcean's dashboard and CLI tools to monitor and manage your droplet and projects.
+
+## Key Features
+
+1. Multi-project support on a single-droplet architecture for cost-effective hosting
+2. Support for various project types: Python, Node.js, PHP, and static sites
+3. Project-specific environment management for application isolation
+4. Automated Apache configuration for each deployed project
+5. Per-project DigitalOcean API token management
+6. Comprehensive deployment information gathering
+7. User-friendly setup and deployment processes with improved error handling and guidance
+8. Integrated DigitalOcean monitoring and management tools
+9. VS Code integration for streamlined development workflow
+
+## Next Steps for Users
+
+1. Familiarize yourself with the project structure and scripts.
+2. Set up your DigitalOcean account and API token.
+3. Run the setup script to create your droplet and configure the environment.
+4. Use the project management script to create a new project.
+5. Deploy a sample project to test the setup.
+6. Use the gather_deployment_info.py script to collect information about your deployments.
+7. Customize the configurations as needed for your specific projects.
+8. Utilize DigitalOcean's monitoring tools to track your droplet's performance.
+9. Regularly check the CHANGELOG.md for updates and new features.
+
+By following these steps and utilizing the provided scripts, you can efficiently manage your DigitalOcean resources and deploy various types of projects using a single-droplet architecture. This approach offers improved resource utilization and cost-effectiveness compared to more complex setups like Kubernetes clusters.
+
+## Cost Considerations
+
+The project includes detailed cost estimates in the README.md file, ranging from $5 to $30 per month depending on the chosen droplet size and additional features. Users can make informed decisions about their resource allocation based on these estimates.
+
+## Future Improvements
+
+Refer to the "Recommendations for Future Improvements" section in the CHANGELOG.md for potential enhancements to the project, including automated SSL certificate management, advanced database management, and load balancing for high-traffic applications.
+
+## Support and Contributions
+
+If you encounter any issues or have suggestions for improvements, please open an issue in the project's repository. Contributions to enhance the functionality or documentation of the DigitalOcean Manager are welcome.
+```
+
+
+# File: README.md
+```
+# DigitalOcean Manager
+
+! This project provides a comprehensive setup for managing multiple web applications and static sites on a single DigitalOcean droplet. It automates many aspects of setup, deployment, and management, utilizing project-specific environments for application isolation.
+
+## Prerequisites
+
+Before using this tool, you need to:
+
+1. Create a DigitalOcean account and set up payment information
+2. Install the following on your local machine:
+   - Python 3.7+
+   - `doctl` (DigitalOcean command-line tool)
+
+## Quick Start
+
+1. Clone this repository:
+   ```
+   git clone https://github.com/yourusername/digital_ocean_manager.git
+   cd digital_ocean_manager
+   ```
+
+2. Run the setup script:
+   ```
+   python setup.py
+   ```
+
+3. Follow the prompts to complete the setup process. The script will:
+   - Create a virtual environment
+   - Install all required Python dependencies
+   - Guide you through generating a DigitalOcean API token
+   - Create a single DigitalOcean droplet
+   - Set up the droplet with necessary software (Python, Node.js, PHP, Apache, MySQL, Docker)
+   - Install and configure DigitalOcean monitoring and management tools
+   - Install project management and DigitalOcean credentials management scripts on the droplet
+
+4. Activate the virtual environment:
+   - On Windows:
+     ```
+     venv\Scripts\activate.bat
+     ```
+   - On macOS and Linux:
+     ```
+     source venv/bin/activate
+     ```
+
+## What's Automated vs. Manual
+
+### Automated:
+- Local virtual environment creation
+- Python dependency installation
+- DigitalOcean droplet creation and initial setup
+- Deployment of web apps and static sites
+- Project management on the droplet
+- DigitalOcean credentials management for each project
+- Gathering and outputting comprehensive deployment information
+- Setting up DigitalOcean monitoring and management tools
+
+### Manual (requires DigitalOcean web interface):
+- Account creation and payment setup
+- API token generation
+- Advanced resource monitoring and cost management
+
+## Usage
+
+After running the setup script and activating the virtual environment, you can use the following scripts to manage your projects:
+
+### Deploying Web Apps and Static Sites
+
+1. Prepare your web app or static site in a local directory
+2. Run the deployment script:
+   ```
+   python scripts/deploy_web_app.py
+   ```
+3. Follow the prompts to specify your project name, type (python, node, php, or static), local directory path, and the droplet IP address
+4. Choose between virtual environment or Docker deployment (see "Deployment Options" section below)
+5. After successful deployment, a JSON file with comprehensive deployment information will be generated
+
+### Deployment Options
+
+When deploying your project, you have two options for environment isolation:
+
+1. Virtual Environment (default):
+   - Uses Python's built-in venv module for Python projects
+   - Uses local Node.js installation for Node.js projects
+   - Uses system-wide PHP installation for PHP projects
+   - Provides lightweight isolation for project dependencies
+
+2. Docker:
+   - Uses Docker containers for complete environment isolation
+   - Supports all project types (Python, Node.js, PHP, static)
+   - Provides stronger isolation, including system-level dependencies
+
+During deployment, you'll be prompted to choose between these options. Select the one that best fits your project's needs and your preferred workflow.
+
+### Customizing Project Environments
+
+#### For Virtual Environment deployments:
+- Python: Modify the requirements.txt file in your project directory
+- Node.js: Update the package.json file in your project directory
+- PHP: If using Composer, update the composer.json file in your project directory
+
+#### For Docker deployments:
+- You can customize the Dockerfile for your project by creating a Dockerfile in your project's root directory before deployment
+- If no custom Dockerfile is found, a default one will be created based on your project type
+
+### Gathering Deployment Information
+
+To collect detailed information about your deployed projects:
+
+1. Run the gather deployment info script:
+   ```
+   python scripts/gather_deployment_info.py
+   ```
+2. Follow the prompts to specify your project name, type, and the droplet IP address
+3. The script will generate a JSON file with comprehensive deployment information
+
+## Project Management
+
+The droplet is set up with a script to manage projects. You can use this script via SSH to create, delete, or list projects:
+
+- Create a new project:
+  ```
+  ssh root@<droplet_ip> '/usr/local/bin/manage_project.sh create <project_name> <project_type>'
+  ```
+
+- Delete a project:
+  ```
+  ssh root@<droplet_ip> '/usr/local/bin/manage_project.sh delete <project_name>'
+  ```
+
+- List all projects:
+  ```
+  ssh root@<droplet_ip> '/usr/local/bin/manage_project.sh list'
+  ```
+
+This system allows you to manage multiple projects on the droplet, keeping each application isolated and preventing conflicts between different projects' dependencies.
+
+## DigitalOcean Credentials Management
+
+The droplet is also set up with a script to manage DigitalOcean credentials for each project. This allows developers to have full access to DigitalOcean features for their specific projects:
+
+- Set DigitalOcean credentials for a project:
+  ```
+  ssh root@<droplet_ip> '/usr/local/bin/manage_do_credentials.sh set <project_name> <do_token>'
+  ```
+
+- Get DigitalOcean credentials for a project:
+  ```
+  ssh root@<droplet_ip> '/usr/local/bin/manage_do_credentials.sh get <project_name>'
+  ```
+
+- Delete DigitalOcean credentials for a project:
+  ```
+  ssh root@<droplet_ip> '/usr/local/bin/manage_do_credentials.sh delete <project_name>'
+  ```
+
+## VS Code Integration
+
+For developers using Visual Studio Code, we've created a comprehensive guide on how to integrate this DigitalOcean Manager into your VS Code workflow. This guide covers:
+
+- Setting up VS Code for remote development with your DigitalOcean droplet
+- Local development and testing processes
+- Syncing your local environment with the remote droplet
+- Deploying and managing your projects using VS Code
+
+To learn more about using this tool with VS Code, please refer to our [VS Code Workflow Integration Guide](vscode_workflow.md).
+
+## Deployment Information and Pipeline Integration
+
+The `{project_name}_deployment_info.json` file generated after deployment contains comprehensive information about your project and its environment. This includes:
+
+1. DigitalOcean API Token (securely stored)
+2. Droplet Information:
+   - IP address
+   - Operating System
+3. Project Information:
+   - Name
+   - Type (python, node, php, or static)
+   - Apache configuration
+   - Virtual environment or Docker container details
+4. Project Dependencies:
+   - List of project-specific dependencies and their versions
+5. Database Information:
+   - Database type, name, and connection details
+6. Environment Variables:
+   - List of environment variables used by the project
+7. Project Structure:
+   - Overview of the project's directory structure
+8. Application Entry Points:
+   - Main application file or entry point
+9. Logging Configuration:
+   - Log file locations and logging setup
+10. Monitoring and Performance:
+    - Links to monitoring dashboards and performance metrics endpoints
+11. Backup and Recovery Information:
+    - Backup procedures and recovery steps
+12. SSL/TLS Configuration:
+    - SSL certificate information and web server SSL configuration
+13. Custom Domain Information:
+    - Details about custom domain setup (if applicable)
+14. Cron Jobs or Scheduled Tasks:
+    - List of scheduled tasks associated with the project
+15. Third-party Service Integrations:
+    - Details of external services the project depends on
+
+This comprehensive information allows you to:
+
+1. Deploy updates to specific projects with all necessary context
+2. Monitor project status and resource usage effectively
+3. Manage resources and scale projects as needed
+4. Troubleshoot issues by having all relevant information in one place
+5. Maintain consistent environments across development, staging, and production
+6. Automate deployment and management tasks in CI/CD pipelines
+
+You can integrate this JSON file into your CI/CD pipelines for automated deployment and management tasks.
+
+## Configuration Management
+
+Environment-specific configurations are stored in the `config/` directory:
+
+- `development.env`: Configuration for the development environment
+- `staging.env`: Configuration for the staging environment
+- `production.env`: Configuration for the production environment
+- `template.env`: A template file with all possible configuration options
+
+These files contain environment variables that are used to configure your projects for different deployment stages. They help maintain consistency across different environments and make it easier to manage environment-specific settings.
+
+### Usage
+
+1. Copy the `template.env` file and rename it to match your environment (e.g., `development.env`, `staging.env`, or `production.env`).
+2. Edit the new file to set the appropriate values for your environment.
+3. When deploying your project, specify which environment configuration to use.
+
+### Example Configuration
+
+A typical configuration file might look like this:
+
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=myapp_dev
+DB_USER=devuser
+DB_PASSWORD=secretpassword
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+DEBUG=True
+LOG_LEVEL=DEBUG
+
+API_KEY=your_api_key_here
+```
+
+Modify these files to suit your project's needs. Be sure to keep sensitive information (like API keys and passwords) secure and never commit them to version control.
+
+## Best Practices and Tips
+
+1. Always use the virtual environment when working with this project
+2. Regularly update dependencies: `pip install --upgrade -r requirements.txt`
+3. Use version control (git) for your projects
+4. Regularly backup your DigitalOcean droplet and databases
+5. Use meaningful names for your resources (projects, sites, etc.)
+6. Monitor your resource usage to optimize costs and performance
+7. Implement proper security measures, such as SSL certificates
+8. Keep your DigitalOcean API tokens secure
+9. Securely manage the generated deployment information JSON files
+10. Regularly review and update Apache configurations for optimal performance
+11. Use the comprehensive deployment information for troubleshooting and maintenance
+12. Utilize DigitalOcean's built-in monitoring tools to track droplet performance
+
+## Maintenance
+
+- Regularly update the scripts to ensure compatibility with the latest DigitalOcean API
+- Keep your droplet's software up to date by regularly running system updates
+- Check for updates to the required Python packages used in your projects
+- Periodically review and optimize your deployed projects for better resource utilization
+- Regularly review and update the gather_deployment_info.py script to ensure it captures all necessary information
+- Monitor and manage your droplet using DigitalOcean's dashboard and CLI tools
+
+## Support
+
+If you encounter any issues or have questions about using this DigitalOcean Manager, please open an issue in this repository or contact your system administrator.
+
+## Disclaimer
+
+This tool is not officially associated with DigitalOcean. Always refer to DigitalOcean's official documentation and terms of service when managing your resources.
+
+## Cost Considerations
+
+Using a single DigitalOcean droplet can be more cost-effective than a Kubernetes cluster. Here's an estimated cost breakdown:
+
+- Basic Droplet (1 GB RAM, 1 vCPU, 25 GB SSD): $5 per month
+- Standard Droplet (2 GB RAM, 1 vCPU, 50 GB SSD): $10 per month
+- Standard Droplet (2 GB RAM, 2 vCPUs, 60 GB SSD): $15 per month
+- Standard Droplet (4 GB RAM, 2 vCPUs, 80 GB SSD): $20 per month
+
+Additional costs to consider:
+- Bandwidth: 1 TB transfer included, $0.01/GB after that
+- Monitoring: Free for basic metrics, $0.007 per hour ($5 per month) for advanced metrics if enabled
+- Backups: 20% of the droplet cost if enabled
+
+Estimated total for a basic setup with multiple projects: $10-$30 per month
+
+To optimize costs:
+1. Monitor resource usage in the DigitalOcean dashboard
+2. Choose an appropriate droplet size based on your needs
+3. Optimize your projects for efficient resource use
+4. Use DigitalOcean's billing alerts to stay informed about your spending
+
+Always review DigitalOcean's current pricing: https://www.digitalocean.com/pricing
+
+## Version Control
+
+This project uses Git for version control. The included `.gitignore` file prevents tracking of unnecessary files. Review and adjust the `.gitignore` file as needed for your specific requirements.
+
+For the latest changes and updates, please refer to the CHANGELOG.md file in this repository.
+
+
+```
+
+
+# File: requirements.txt
+```
+python-digitalocean==1.17.0
+paramiko==2.11.0
+Flask==2.3.2
+Flask-SQLAlchemy==3.0.3
+Flask-Login==0.6.2
+gunicorn==20.1.0
+requests==2.31.0
+python-dotenv==1.0.0
+```
+
+
+# File: setup.py
+```
+import os
+import subprocess
+import sys
+import venv
+import webbrowser
+import time
+
+def create_virtual_environment():
+    venv_dir = os.path.join(os.getcwd(), "venv")
+    print(f"Creating virtual environment in {venv_dir}...")
+    try:
+        venv.create(venv_dir, with_pip=True)
+        print("Virtual environment created successfully.")
+    except Exception as e:
+        print(f"Error creating virtual environment: {e}")
+        print("Please ensure you have Python 3.7+ installed and try again.")
+        sys.exit(1)
+    return venv_dir
+
+def get_venv_python(venv_dir):
+    if sys.platform == "win32":
+        return os.path.join(venv_dir, "Scripts", "python.exe")
+    return os.path.join(venv_dir, "bin", "python")
+
+def install_dependencies(venv_python):
+    print("Installing dependencies... This may take a few minutes.")
+    try:
+        subprocess.run([venv_python, "-m", "pip", "install", "--upgrade", "pip"], check=True)
+        subprocess.run([venv_python, "-m", "pip", "install", "-r", "requirements.txt"], check=True)
+        print("Dependencies installed successfully.")
+    except subprocess.CalledProcessError:
+        print("Error installing dependencies. Please check your internet connection and try again.")
+        sys.exit(1)
+
+def check_external_dependencies():
+    dependencies = ['doctl']
+    missing = []
+    for dep in dependencies:
+        try:
+            subprocess.run([dep, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except FileNotFoundError:
+            missing.append(dep)
+    return missing
+
+def get_do_token():
+    token = os.getenv('DO_TOKEN')
+    if not token:
+        print("\nTo generate a DigitalOcean API token:")
+        print("1. Go to https://cloud.digitalocean.com/account/api/tokens")
+        print("2. Click 'Generate New Token'")
+        print("3. Give it a name (e.g., 'DigitalOceanManager')")
+        print("4. Set the token's expiry to 'No expiry' for long-term use")
+        print("5. Copy the generated token")
+        print("\nOpening the DigitalOcean API tokens page in your default web browser...")
+        time.sleep(3)  # Give user time to read instructions
+        webbrowser.open('https://cloud.digitalocean.com/account/api/tokens')
+        token = input("\nPlease enter your DigitalOcean API token: ").strip()
+        if not token:
+            print("No token provided. Exiting setup.")
+            sys.exit(1)
+        os.environ['DO_TOKEN'] = token
+    return token
+
+def run_initial_setup(venv_python):
+    print("\nRunning initial droplet setup...")
+    try:
+        subprocess.run([venv_python, 'scripts/initial_setup.py'], check=True)
+    except subprocess.CalledProcessError:
+        print("Error during initial setup. Please check the error messages above and try again.")
+        sys.exit(1)
+
+def main():
+    print("Welcome to the DigitalOcean Manager setup!")
+    print("This script will guide you through the initial setup process for managing multiple projects on a single DigitalOcean droplet.")
+    print("If you encounter any issues, please refer to the README.md file or contact support.")
+
+    input("Press Enter to begin the setup process...")
+
+    venv_dir = create_virtual_environment()
+    venv_python = get_venv_python(venv_dir)
+    install_dependencies(venv_python)
+
+    print("\nChecking external dependencies...")
+    missing_deps = check_external_dependencies()
+    if missing_deps:
+        print(f"The following dependencies are missing: {', '.join(missing_deps)}")
+        print("Please install them and run this script again.")
+        print("\nInstallation instructions:")
+        print("- doctl: https://docs.digitalocean.com/reference/doctl/how-to/install/")
+        print("\nAfter installing the missing dependencies, please restart this setup script.")
+        sys.exit(1)
+
+    token = get_do_token()
+
+    run_initial_setup(venv_python)
+
+    print("\nSetup complete!")
+    print("\nTo activate the virtual environment, run:")
+    if sys.platform == "win32":
+        print(f"    {os.path.join(venv_dir, 'Scripts', 'activate.bat')}")
+    else:
+        print(f"    source {os.path.join(venv_dir, 'bin', 'activate')}")
+    print("\nNext steps:")
+    print("1. Activate the virtual environment")
+    print("2. Review the README.md file for detailed usage instructions.")
+    print("3. Use the scripts in the 'scripts' directory to manage and deploy your projects:")
+    print("   - Create a new project: ssh root@<droplet_ip> '/usr/local/bin/manage_project.sh create <project_name> <project_type>'")
+    print("   - Deploy a project: python scripts/deploy_web_app.py")
+    print("   - Manage DigitalOcean credentials: ssh root@<droplet_ip> '/usr/local/bin/manage_do_credentials.sh [set|get|delete] <project_name> [do_token]'")
+    print("4. Gather deployment information: python scripts/gather_deployment_info.py")
+    print("\nRemember to monitor your resource usage and costs through the DigitalOcean dashboard:")
+    print("https://cloud.digitalocean.com/dashboard")
+    
+    print("\nIf you need any assistance, please refer to the README.md file or contact support.")
+
+if __name__ == "__main__":
+    main()
+```
+
+
+# File: vscode_workflow.md
+```
+# VS Code Workflow Integration Guide
+
+This guide explains how to incorporate the DigitalOcean Manager into your development workflow using Visual Studio Code (VS Code). It covers the process from local development and testing to deployment on the DigitalOcean droplet.
+
+## Setup
+
+1. Ensure you have completed the initial setup as described in the README.md file.
+2. Install the "Remote - SSH" extension in VS Code.
+
+## Development Workflow
+
+### 1. Local Development
+
+1. Open your project folder in VS Code.
+2. Create or modify your web application or static site in your local project directory.
+3. Use VS Code's integrated terminal to activate your local virtual environment:
+   ```
+   source venv/bin/activate  # On macOS/Linux
+   venv\Scripts\activate.bat  # On Windows
+   ```
+
+### 2. Testing Locally
+
+1. For web applications, set up a local development server. For example, if using Flask:
+   ```python
+   from flask import Flask
+   app = Flask(__name__)
+
+   @app.route('/')
+   def hello():
+       return "Hello, World!"
+
+   if __name__ == '__main__':
+       app.run(debug=True)
+   ```
+2. Run your local server and test your application in your web browser.
+
+### 3. Connecting to the Remote Droplet
+
+1. In VS Code, open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P).
+2. Type "Remote-SSH: Connect to Host" and select it.
+3. Enter `root@<your-droplet-ip>` and press Enter.
+4. VS Code will open a new window connected to your droplet.
+
+### 4. Syncing Files
+
+1. In the remote VS Code window, open the folder where your application will be deployed (e.g., `/opt/projects/your-project-name`).
+2. Use VS Code's built-in file explorer to upload your local files to the remote folder.
+
+### 5. Testing on the Droplet
+
+1. In the remote VS Code window, open an integrated terminal.
+2. If using virtual environments, activate the appropriate one:
+   ```
+   source /opt/venvs/your-project-name/bin/activate
+   ```
+3. Run your application or start your web server to test.
+
+### 6. Deployment
+
+When you're ready to deploy:
+
+1. Ensure all your changes are synced to the droplet.
+2. In your local VS Code window, run the deployment script:
+   ```
+   python scripts/deploy_web_app.py
+   ```
+3. Follow the prompts, specifying the project name, type, local directory path, and whether to use Docker or virtual environment.
+
+### 7. Post-Deployment
+
+After deployment:
+
+1. Run the gather deployment info script:
+   ```
+   python scripts/gather_deployment_info.py
+   ```
+2. Use the generated JSON file to update any CI/CD pipelines or monitoring tools.
+
+## Tips for Efficient Workflow
+
+1. Use VS Code's "Remote - SSH" extension to edit files directly on the droplet when needed.
+2. Set up VS Code tasks for common operations like running tests or starting local servers.
+3. Use VS Code's Source Control features to manage your git repository.
+4. Consider setting up a staging environment on a separate droplet for testing before production deployment.
+
+## Troubleshooting
+
+- If you encounter permission issues when editing files on the droplet, ensure you're connected as the root user or have the necessary permissions.
+- If your local and remote environments get out of sync, use the `gather_deployment_info.py` script to get the current state of your deployment.
+
+Remember to always backup your data and test thoroughly before deploying to production. Refer to the main README.md and other documentation files for more detailed information on specific components of the DigitalOcean Manager.
+```
+
+
+# Directory: config
+
+# File: config\.env
+```
+
+```
+
+
+# Directory: scripts
+
+# File: scripts\deploy_web_app.py
+```
+import os
+import subprocess
+import sys
+import json
+from gather_deployment_info import gather_and_output_info
+
+def check_project_exists(droplet_ip, project_name):
+    print(f"Checking if project '{project_name}' exists...")
+    try:
+        result = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"/usr/local/bin/manage_project.sh list | grep {project_name}"], capture_output=True, text=True)
+        return project_name in result.stdout
+    except subprocess.CalledProcessError:
+        return False
+
+def create_project(droplet_ip, project_name, project_type):
+    print(f"Creating project '{project_name}' of type '{project_type}'...")
+    try:
+        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"/usr/local/bin/manage_project.sh create {project_name} {project_type}"], check=True)
+        print(f"Project '{project_name}' created successfully.")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Error creating project: {e}")
+        return False
+
+def deploy_project_files(droplet_ip, project_name, local_dir):
+    print(f"Deploying project files for '{project_name}' to the droplet...")
+    try:
+        # Create project directory on the droplet
+        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"mkdir -p /opt/projects/{project_name}"], check=True)
+        
+        # Copy project files to the droplet
+        subprocess.run(["scp", "-r", f"{local_dir}/*", f"root@{droplet_ip}:/opt/projects/{project_name}/"], check=True)
+        print(f"Project files for '{project_name}' copied to the droplet successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error deploying project files: {e}")
+        return False
+    return True
+
+def setup_virtual_environment(droplet_ip, project_name, project_type):
+    print(f"Setting up virtual environment for '{project_name}'...")
+    try:
+        if project_type == "python":
+            subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", 
+                            f"python3 -m venv /opt/venvs/{project_name} && source /opt/venvs/{project_name}/bin/activate && pip install -r /opt/projects/{project_name}/requirements.txt"], check=True)
+        elif project_type == "node":
+            subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", 
+                            f"cd /opt/projects/{project_name} && npm install"], check=True)
+        elif project_type == "php":
+            # For PHP, we assume dependencies are managed by Composer
+            subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", 
+                            f"cd /opt/projects/{project_name} && composer install"], check=True)
+        print(f"Virtual environment for '{project_name}' set up successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error setting up virtual environment: {e}")
+        return False
+    return True
+
+def setup_docker_environment(droplet_ip, project_name, project_type):
+    print(f"Setting up Docker environment for '{project_name}'...")
+    try:
+        # Create Dockerfile
+        dockerfile_content = get_dockerfile_content(project_type)
+        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"echo '{dockerfile_content}' > /opt/projects/{project_name}/Dockerfile"], check=True)
+        
+        # Build Docker image
+        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cd /opt/projects/{project_name} && docker build -t {project_name} ."], check=True)
+        
+        # Stop and remove existing container if it exists
+        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"docker stop {project_name} || true && docker rm {project_name} || true"], check=True)
+        
+        # Run new container
+        port = "80" if project_type == "static" else "8080"
+        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"docker run -d --name {project_name} -p {port}:{port} {project_name}"], check=True)
+        
+        print(f"Docker environment for '{project_name}' set up successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error setting up Docker environment: {e}")
+        return False
+    return True
+
+def get_dockerfile_content(project_type):
+    if project_type == "python":
+        return """
+FROM python:3.9
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["python", "app.py"]
+"""
+    elif project_type == "node":
+        return """
+FROM node:14
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm install
+COPY . .
+CMD ["node", "app.js"]
+"""
+    elif project_type == "php":
+        return """
+FROM php:7.4-apache
+COPY . /var/www/html/
+"""
+    else:  # static
+        return """
+FROM nginx:alpine
+COPY . /usr/share/nginx/html
+"""
+
+def configure_apache(droplet_ip, project_name, project_type):
+    print(f"Configuring Apache for '{project_name}'...")
+    config = f"""<VirtualHost *:80>
+    ServerName {project_name}.yourdomain.com
+    DocumentRoot /opt/projects/{project_name}
+    
+    <Directory /opt/projects/{project_name}>
+        Options FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+    
+    {"" if project_type == "static" else f"WSGIDaemonProcess {project_name} python-home=/opt/venvs/{project_name} python-path=/opt/projects/{project_name}"}
+    {"" if project_type == "static" else f"WSGIProcessGroup {project_name}"}
+    {"" if project_type == "static" else f"WSGIScriptAlias / /opt/projects/{project_name}/app.wsgi"}
+
+    ErrorLog ${{APACHE_LOG_DIR}}/{project_name}_error.log
+    CustomLog ${{APACHE_LOG_DIR}}/{project_name}_access.log combined
+</VirtualHost>"""
+    
+    try:
+        # Write the configuration to a file on the droplet
+        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"echo '{config}' > /etc/apache2/sites-available/{project_name}.conf"], check=True)
+        
+        # Enable the site and reload Apache
+        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"a2ensite {project_name}.conf"], check=True)
+        subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", "systemctl reload apache2"], check=True)
+        
+        print(f"Apache configured for '{project_name}'.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error configuring Apache: {e}")
+        return False
+    return True
+
+def deploy_project(project_name, project_type, droplet_ip, local_dir, use_docker):
+    print(f"\nStarting deployment of {project_type} project '{project_name}' to droplet at {droplet_ip}...")
+    
+    if not os.path.exists(local_dir):
+        print(f"Error: The local directory '{local_dir}' does not exist.")
+        return False
+
+    if check_project_exists(droplet_ip, project_name):
+        print(f"Project '{project_name}' already exists on the droplet.")
+        overwrite = input("Do you want to overwrite it? (y/n): ")
+        if overwrite.lower() != 'y':
+            print("Deployment cancelled.")
+            return False
+    else:
+        if not create_project(droplet_ip, project_name, project_type):
+            return False
+
+    try:
+        if not deploy_project_files(droplet_ip, project_name, local_dir):
+            return False
+        
+        if use_docker:
+            if not setup_docker_environment(droplet_ip, project_name, project_type):
+                return False
+        else:
+            if not setup_virtual_environment(droplet_ip, project_name, project_type):
+                return False
+            if not configure_apache(droplet_ip, project_name, project_type):
+                return False
+
+        print(f"\nProject '{project_name}' deployed successfully to the droplet")
+
+        # Gather and output deployment information
+        output_file = gather_and_output_info(project_name, project_type, droplet_ip)
+        print(f"Deployment information saved to {output_file}")
+
+        print(f"\nYour project '{project_name}' should now be accessible at: http://{droplet_ip}")
+        print("Note: For production use, you should set up a domain name and configure SSL/TLS.")
+
+        return True
+
+    except Exception as e:
+        print(f"Unexpected error during deployment: {e}")
+        return False
+
+def main():
+    print("Welcome to the Project Deployment Script!")
+    print("This script will help you deploy your project to your DigitalOcean droplet.")
+    
+    project_name = input("\nEnter the name of your project: ")
+    droplet_ip = input("Enter the IP address of your DigitalOcean droplet: ")
+    
+    print("\nSupported project types:")
+    print("1. Python")
+    print("2. Node.js")
+    print("3. PHP")
+    print("4. Static HTML")
+    
+    while True:
+        project_type_choice = input("Enter the number corresponding to your project type: ")
+        if project_type_choice in ['1', '2', '3', '4']:
+            break
+        print("Invalid choice. Please enter a number between 1 and 4.")
+
+    project_type_map = {'1': 'python', '2': 'node', '3': 'php', '4': 'static'}
+    project_type = project_type_map[project_type_choice]
+    
+    local_dir = input("Enter the local directory path of your project: ")
+    
+    use_docker = input("Do you want to use Docker for deployment? (y/n): ").lower() == 'y'
+    
+    print(f"\nPreparing to deploy {project_type} project '{project_name}' to droplet at {droplet_ip}")
+    print(f"Using {'Docker' if use_docker else 'virtual environment'} for isolation")
+    confirm = input("Do you want to continue? (y/n): ")
+    
+    if confirm.lower() != 'y':
+        print("Deployment cancelled.")
+        sys.exit(0)
+
+    if deploy_project(project_name, project_type, droplet_ip, local_dir, use_docker):
+        print("\nDeployment completed successfully!")
+    else:
+        print("\nDeployment failed. Please check the error messages above and try again.")
+
+if __name__ == '__main__':
+    main()
+```
+
+
+# File: scripts\gather_deployment_info.py
+```
+import os
+import json
+import subprocess
+import sys
+
+def get_do_token(project_name, droplet_ip):
+    print(f"Retrieving DigitalOcean API token for project '{project_name}'...")
+    try:
+        token = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"/usr/local/bin/manage_do_credentials.sh get {project_name}"], capture_output=True, text=True, check=True)
+        return token.stdout.strip()
+    except subprocess.CalledProcessError:
+        print(f"Warning: Unable to retrieve DigitalOcean API token for project '{project_name}'")
+        return None
+
+def get_droplet_info(droplet_ip):
+    print(f"Gathering information about the droplet at {droplet_ip}...")
+    droplet_info = {
+        "ip_address": droplet_ip,
+    }
+    
+    # Get OS information
+    try:
+        os_info = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", "cat /etc/os-release"], capture_output=True, text=True, check=True)
+        for line in os_info.stdout.split('\n'):
+            if line.startswith('PRETTY_NAME='):
+                droplet_info["os"] = line.split('=')[1].strip('"')
+                break
+    except subprocess.CalledProcessError:
+        print(f"Warning: Unable to retrieve OS information from the droplet at {droplet_ip}")
+        droplet_info["os"] = "Unable to retrieve OS information"
+
+    return droplet_info
+
+def get_project_info(project_name, project_type, droplet_ip):
+    print(f"Gathering information about the {project_type} project '{project_name}'...")
+    project_info = {
+        "name": project_name,
+        "type": project_type,
+    }
+    
+    # Get Apache configuration for the project
+    try:
+        apache_config = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cat /etc/apache2/sites-available/{project_name}.conf"], capture_output=True, text=True, check=True)
+        project_info["apache_config"] = apache_config.stdout
+    except subprocess.CalledProcessError:
+        print(f"Warning: Unable to retrieve Apache configuration for {project_name}")
+        project_info["apache_config"] = "Unable to retrieve Apache configuration"
+    
+    # Get virtual environment information
+    if project_type != "static":
+        try:
+            venv_info = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"ls -l /opt/venvs/{project_name}"], capture_output=True, text=True, check=True)
+            project_info["virtual_environment"] = venv_info.stdout.strip()
+        except subprocess.CalledProcessError:
+            print(f"Warning: Unable to retrieve virtual environment information for {project_name}")
+            project_info["virtual_environment"] = "Unable to retrieve virtual environment information"
+    
+    return project_info
+
+def get_project_dependencies(project_name, project_type, droplet_ip):
+    print(f"Gathering project dependencies for '{project_name}'...")
+    try:
+        if project_type == "python":
+            dependencies = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cat /opt/projects/{project_name}/requirements.txt"], capture_output=True, text=True, check=True)
+        elif project_type == "node":
+            dependencies = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cat /opt/projects/{project_name}/package.json"], capture_output=True, text=True, check=True)
+        elif project_type == "php":
+            dependencies = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cat /opt/projects/{project_name}/composer.json"], capture_output=True, text=True, check=True)
+        else:
+            return "No dependencies for static projects"
+        return dependencies.stdout.strip()
+    except subprocess.CalledProcessError:
+        print(f"Warning: Unable to retrieve project dependencies for {project_name}")
+        return "Unable to retrieve project dependencies"
+
+def get_database_info(project_name, droplet_ip):
+    print(f"Gathering database information for '{project_name}'...")
+    # This is a placeholder. In a real scenario, you'd need to securely retrieve and store this information.
+    return {
+        "type": "MySQL",
+        "name": f"{project_name}_db",
+        "user": f"{project_name}_user",
+        "connection_string": "mysql://user:password@localhost:3306/dbname"
+    }
+
+def get_environment_variables(project_name, droplet_ip):
+    print(f"Gathering environment variables for '{project_name}'...")
+    try:
+        env_vars = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cat /opt/projects/{project_name}/.env"], capture_output=True, text=True, check=True)
+        return env_vars.stdout.strip()
+    except subprocess.CalledProcessError:
+        print(f"Warning: Unable to retrieve environment variables for {project_name}")
+        return "Unable to retrieve environment variables"
+
+def get_project_structure(project_name, droplet_ip):
+    print(f"Gathering project structure for '{project_name}'...")
+    try:
+        structure = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"tree /opt/projects/{project_name} -L 2"], capture_output=True, text=True, check=True)
+        return structure.stdout.strip()
+    except subprocess.CalledProcessError:
+        print(f"Warning: Unable to retrieve project structure for {project_name}")
+        return "Unable to retrieve project structure"
+
+def get_application_entry_points(project_name, project_type, droplet_ip):
+    print(f"Gathering application entry points for '{project_name}'...")
+    try:
+        if project_type == "python":
+            entry_points = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cat /opt/projects/{project_name}/wsgi.py"], capture_output=True, text=True, check=True)
+        elif project_type == "node":
+            entry_points = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cat /opt/projects/{project_name}/app.js"], capture_output=True, text=True, check=True)
+        elif project_type == "php":
+            entry_points = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cat /opt/projects/{project_name}/index.php"], capture_output=True, text=True, check=True)
+        else:
+            return "No specific entry point for static projects"
+        return entry_points.stdout.strip()
+    except subprocess.CalledProcessError:
+        print(f"Warning: Unable to retrieve application entry points for {project_name}")
+        return "Unable to retrieve application entry points"
+
+def get_logging_configuration(project_name, droplet_ip):
+    print(f"Gathering logging configuration for '{project_name}'...")
+    try:
+        logging_config = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cat /opt/projects/{project_name}/logging.conf"], capture_output=True, text=True, check=True)
+        return logging_config.stdout.strip()
+    except subprocess.CalledProcessError:
+        print(f"Warning: Unable to retrieve logging configuration for {project_name}")
+        return "Unable to retrieve logging configuration"
+
+def get_monitoring_info(project_name, droplet_ip):
+    print(f"Gathering monitoring information for '{project_name}'...")
+    # This is a placeholder. In a real scenario, you'd provide actual monitoring dashboard URLs or endpoints.
+    return {
+        "monitoring_dashboard": f"https://monitoring.yourdomain.com/dashboard/{project_name}",
+        "performance_metrics_endpoint": f"https://api.yourdomain.com/metrics/{project_name}"
+    }
+
+def get_backup_recovery_info(project_name, droplet_ip):
+    print(f"Gathering backup and recovery information for '{project_name}'...")
+    # This is a placeholder. In a real scenario, you'd provide actual backup procedures and recovery steps.
+    return {
+        "backup_procedure": "Daily automated backups at 2 AM UTC",
+        "recovery_steps": "1. Stop the application\n2. Restore from latest backup\n3. Restart the application"
+    }
+
+def get_ssl_tls_config(project_name, droplet_ip):
+    print(f"Gathering SSL/TLS configuration for '{project_name}'...")
+    try:
+        ssl_config = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cat /etc/apache2/sites-available/{project_name}-le-ssl.conf"], capture_output=True, text=True, check=True)
+        return ssl_config.stdout.strip()
+    except subprocess.CalledProcessError:
+        print(f"Warning: Unable to retrieve SSL/TLS configuration for {project_name}")
+        return "Unable to retrieve SSL/TLS configuration"
+
+def get_custom_domain_info(project_name, droplet_ip):
+    print(f"Gathering custom domain information for '{project_name}'...")
+    try:
+        domain_info = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"cat /etc/apache2/sites-available/{project_name}.conf | grep ServerName"], capture_output=True, text=True, check=True)
+        return domain_info.stdout.strip()
+    except subprocess.CalledProcessError:
+        print(f"Warning: Unable to retrieve custom domain information for {project_name}")
+        return "Unable to retrieve custom domain information"
+
+def get_cron_jobs(project_name, droplet_ip):
+    print(f"Gathering cron jobs for '{project_name}'...")
+    try:
+        cron_jobs = subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet_ip}", f"crontab -l | grep {project_name}"], capture_output=True, text=True, check=True)
+        return cron_jobs.stdout.strip()
+    except subprocess.CalledProcessError:
+        print(f"Warning: Unable to retrieve cron jobs for {project_name}")
+        return "Unable to retrieve cron jobs"
+
+def get_third_party_integrations(project_name, droplet_ip):
+    print(f"Gathering third-party integrations for '{project_name}'...")
+    # This is a placeholder. In a real scenario, you'd need to securely retrieve and store this information.
+    return {
+        "external_apis": [
+            {"name": "Example API", "endpoint": "https://api.example.com", "api_key": "your-api-key-here"}
+        ]
+    }
+
+def gather_and_output_info(project_name, project_type, droplet_ip):
+    print(f"\nGathering deployment information for {project_type} project '{project_name}' on droplet {droplet_ip}...")
+    
+    deployment_info = {
+        "do_token": get_do_token(project_name, droplet_ip),
+        "droplet_info": get_droplet_info(droplet_ip),
+        "project_info": get_project_info(project_name, project_type, droplet_ip),
+        "project_dependencies": get_project_dependencies(project_name, project_type, droplet_ip),
+        "database_info": get_database_info(project_name, droplet_ip),
+        "environment_variables": get_environment_variables(project_name, droplet_ip),
+        "project_structure": get_project_structure(project_name, droplet_ip),
+        "application_entry_points": get_application_entry_points(project_name, project_type, droplet_ip),
+        "logging_configuration": get_logging_configuration(project_name, droplet_ip),
+        "monitoring_info": get_monitoring_info(project_name, droplet_ip),
+        "backup_recovery_info": get_backup_recovery_info(project_name, droplet_ip),
+        "ssl_tls_config": get_ssl_tls_config(project_name, droplet_ip),
+        "custom_domain_info": get_custom_domain_info(project_name, droplet_ip),
+        "cron_jobs": get_cron_jobs(project_name, droplet_ip),
+        "third_party_integrations": get_third_party_integrations(project_name, droplet_ip)
+    }
+
+    output_file = f"{project_name}_deployment_info.json"
+    try:
+        with open(output_file, 'w') as f:
+            json.dump(deployment_info, f, indent=2)
+        print(f"\nDeployment information has been saved to {output_file}")
+    except IOError as e:
+        print(f"Error: Unable to write deployment information to {output_file}")
+        print(f"Error details: {e}")
+        return None
+
+    return output_file
+
+def main():
+    print("Welcome to the Deployment Information Gathering Tool!")
+    print("This script will collect comprehensive information about your deployed project and the droplet it's hosted on.")
+
+    project_name = input("\nEnter the project name: ")
+    while True:
+        project_type = input("Enter the project type (python, node, php, or static): ").lower()
+        if project_type in ['python', 'node', 'php', 'static']:
+            break
+        print("Invalid project type. Please enter 'python', 'node', 'php', or 'static'.")
+
+    droplet_ip = input("Enter the droplet IP address: ")
+
+    output_file = gather_and_output_info(project_name, project_type, droplet_ip)
+    
+    if output_file:
+        print("\nNext steps:")
+        print(f"1. Review the contents of {output_file} to ensure all information is correct.")
+        print("2. Use this information for monitoring, maintenance, or future deployments.")
+        print("3. Keep this file secure, as it contains sensitive information about your deployment.")
+    else:
+        print("\nFailed to gather deployment information. Please check the errors above and try again.")
+
+if __name__ == "__main__":
+    main()
+```
+
+
+# File: scripts\initial_setup.py
+```
+import os
+import subprocess
+import time
+from digitalocean import Manager, Droplet, SSHKey, APIError
+
+def create_droplet(token, droplet_name, region, size, image):
+    manager = Manager(token=token)
+    
+    print(f"Creating droplet '{droplet_name}'...")
+    try:
+        # Create the Droplet with monitoring enabled
+        droplet = Droplet(
+            token=token,
+            name=droplet_name,
+            region=region,
+            size=size,
+            image=image,
+            ssh_keys=manager.get_all_sshkeys(),
+            monitoring=True,  # Enable DigitalOcean monitoring
+            tags=["managed"]  # Add tag for management tools
+        )
+        
+        droplet.create()
+        
+        # Wait for the droplet to be ready
+        print("Waiting for the droplet to be ready. This may take a few minutes...")
+        while droplet.status != 'active':
+            time.sleep(30)
+            droplet.load()
+        
+        print(f"Droplet '{droplet_name}' created successfully with monitoring enabled.")
+        return droplet
+    except APIError as e:
+        print(f"Error creating droplet: {e}")
+        return None
+
+def setup_droplet(droplet):
+    print("Setting up the droplet with necessary software...")
+    # Install necessary software and set up the environment
+    commands = [
+        "apt update && apt upgrade -y",
+        "apt install -y python3-venv nodejs npm php",
+        "npm install -g n && n lts",  # Install Node.js version manager
+        "apt install -y apache2",  # Install Apache for hosting static sites
+        "systemctl enable apache2",
+        "apt install -y mysql-server",  # Install MySQL for database management
+        "systemctl enable mysql",
+        "apt install -y php-mysql",  # Install PHP MySQL extension
+        "systemctl restart apache2",
+        # Install DigitalOcean monitoring agent
+        "curl -sSL https://agent.digitalocean.com/install.sh | sh",
+        # Install DigitalOcean CLI (doctl) for management
+        "snap install doctl",
+        # Install DigitalOcean Metrics Agent for advanced metrics
+        "curl -sSL https://repos.insights.digitalocean.com/install.sh | sudo bash",
+        # Install Docker for containerization
+        "apt install -y docker.io",
+        "systemctl enable docker",
+        # Install Python package manager
+        "apt install -y python3-pip",
+        # Install Git for version control
+        "apt install -y git",
+    ]
+    
+    for command in commands:
+        try:
+            subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", command], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error executing command '{command}': {e}")
+            return False
+    
+    print("Droplet setup completed successfully.")
+    return True
+
+def setup_project_management(droplet):
+    print("Setting up project management tools...")
+    commands = [
+        # Create directory structure
+        "mkdir -p /opt/projects",
+        "mkdir -p /opt/venvs",
+        "mkdir -p /opt/configs",
+        
+        # Create project management script
+        """cat << EOF > /usr/local/bin/manage_project.sh
+#!/bin/bash
+
+function create_project() {
+    project_name=\$1
+    project_type=\$2
+    mkdir -p /opt/projects/\$project_name
+    python3 -m venv /opt/venvs/\$project_name
+    echo "{\\"name\\": \\"\$project_name\\", \\"type\\": \\"\$project_type\\"}" > /opt/configs/\$project_name.json
+    echo "Project \$project_name created successfully."
+}
+
+function delete_project() {
+    project_name=\$1
+    rm -rf /opt/projects/\$project_name
+    rm -rf /opt/venvs/\$project_name
+    rm -f /opt/configs/\$project_name.json
+    echo "Project \$project_name deleted successfully."
+}
+
+function list_projects() {
+    echo "Projects:"
+    for config in /opt/configs/*.json; do
+        project_name=\$(basename \$config .json)
+        project_type=\$(jq -r .type \$config)
+        echo "- \$project_name (\$project_type)"
+    done
+}
+
+case \$1 in
+    create)
+        create_project \$2 \$3
+        ;;
+    delete)
+        delete_project \$2
+        ;;
+    list)
+        list_projects
+        ;;
+    *)
+        echo "Usage: \$0 {create|delete|list} [project_name] [project_type]"
+        exit 1
+esac
+EOF""",
+        "chmod +x /usr/local/bin/manage_project.sh"
+    ]
+    
+    for command in commands:
+        try:
+            subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", command], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error executing command: {e}")
+            return False
+    
+    print("Project management setup completed successfully.")
+    return True
+
+def setup_do_credentials(droplet):
+    print("Setting up DigitalOcean credentials management...")
+    commands = [
+        # Create credentials management script
+        """cat << EOF > /usr/local/bin/manage_do_credentials.sh
+#!/bin/bash
+
+function set_credentials() {
+    project_name=\$1
+    do_token=\$2
+    echo "{\\"do_token\\": \\"\$do_token\\"}" > /opt/configs/\$project_name\_do_credentials.json
+    echo "DigitalOcean credentials set for project \$project_name."
+}
+
+function get_credentials() {
+    project_name=\$1
+    if [ -f "/opt/configs/\${project_name}_do_credentials.json" ]; then
+        jq -r .do_token "/opt/configs/\${project_name}_do_credentials.json"
+    else
+        echo "No DigitalOcean credentials found for project \$project_name."
+    fi
+}
+
+function delete_credentials() {
+    project_name=\$1
+    rm -f "/opt/configs/\${project_name}_do_credentials.json"
+    echo "DigitalOcean credentials deleted for project \$project_name."
+}
+
+case \$1 in
+    set)
+        set_credentials \$2 \$3
+        ;;
+    get)
+        get_credentials \$2
+        ;;
+    delete)
+        delete_credentials \$2
+        ;;
+    *)
+        echo "Usage: \$0 {set|get|delete} [project_name] [do_token]"
+        exit 1
+esac
+EOF""",
+        "chmod +x /usr/local/bin/manage_do_credentials.sh"
+    ]
+    
+    for command in commands:
+        try:
+            subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", command], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error executing command: {e}")
+            return False
+    
+    print("DigitalOcean credentials management setup completed successfully.")
+    return True
+
+def main():
+    print("Welcome to the DigitalOcean Droplet Setup!")
+    print("This script will guide you through creating and setting up your droplet for multi-project hosting.")
+    
+    token = os.getenv("DO_TOKEN")
+    if not token:
+        print("DigitalOcean API token not found. Please make sure you've set the DO_TOKEN environment variable.")
+        return
+
+    droplet_name = input("Enter a name for your DigitalOcean droplet: ")
+    
+    print("\nAvailable regions:")
+    print("nyc1, nyc3 - New York")
+    print("sfo2, sfo3 - San Francisco")
+    print("ams3 - Amsterdam")
+    print("sgp1 - Singapore")
+    print("lon1 - London")
+    print("fra1 - Frankfurt")
+    print("tor1 - Toronto")
+    print("blr1 - Bangalore")
+    region = input("Enter the region for your droplet (e.g., nyc1): ")
+    
+    print("\nAvailable droplet sizes:")
+    print("s-1vcpu-1gb - 1 vCPU, 1 GB RAM, 25 GB SSD")
+    print("s-1vcpu-2gb - 1 vCPU, 2 GB RAM, 50 GB SSD")
+    print("s-2vcpu-2gb - 2 vCPU, 2 GB RAM, 60 GB SSD")
+    print("s-2vcpu-4gb - 2 vCPU, 4 GB RAM, 80 GB SSD")
+    size = input("Enter the size for the droplet (e.g., s-1vcpu-1gb): ")
+    
+    print("\nRecommended image:")
+    print("ubuntu-20-04-x64 - Ubuntu 20.04 LTS x64")
+    image = input("Enter the image for the droplet (press Enter for ubuntu-20-04-x64): ") or "ubuntu-20-04-x64"
+    
+    droplet = create_droplet(token, droplet_name, region, size, image)
+    if not droplet:
+        print("Failed to create droplet. Please check your inputs and try again.")
+        return
+
+    if not setup_droplet(droplet):
+        print("Failed to set up droplet. Please check the error messages above and try again.")
+        return
+
+    if not setup_project_management(droplet):
+        print("Failed to set up project management. Please check the error messages above and try again.")
+        return
+
+    if not setup_do_credentials(droplet):
+        print("Failed to set up DigitalOcean credentials management. Please check the error messages above and try again.")
+        return
+    
+    print("\nInitial setup complete!")
+    print(f"Your droplet is ready to use at IP: {droplet.ip_address}")
+    print("\nTo manage projects on your droplet, use the following command:")
+    print(f"ssh root@{droplet.ip_address} '/usr/local/bin/manage_project.sh [create|delete|list] [project_name] [project_type]'")
+    print("\nTo manage DigitalOcean credentials for projects, use the following command:")
+    print(f"ssh root@{droplet.ip_address} '/usr/local/bin/manage_do_credentials.sh [set|get|delete] [project_name] [do_token]'")
+    print("\nDigitalOcean monitoring and management tools have been enabled for your droplet.")
+    print("You can view monitoring data and manage your droplet in the DigitalOcean dashboard.")
+    print("\nPlease refer to the README.md and droplet_monitoring.md files for more information on how to use, monitor, and manage your new multi-project droplet.")
+
+if __name__ == "__main__":
+    main()
+```

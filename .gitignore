@@ -3,8 +3,7 @@ venv/
 env/
 
 # Environment variables and API keys
-*.env
-.env
+
 
 # Python
 __pycache__/
