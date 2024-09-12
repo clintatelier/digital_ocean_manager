@@ -253,28 +253,51 @@ These files contain environment variables that are used to configure your projec
 
 ### Usage
 
-1. Copy the `template.env` file and rename it to match your environment (e.g., `development.env`, `staging.env`, or `production.env`).
+1. Copy the `config/template.env` file and rename it to match your environment (e.g., `development.env`, `staging.env`, or `production.env`).
 2. Edit the new file to set the appropriate values for your environment.
 3. When deploying your project, specify which environment configuration to use.
+
+### Setting Up Your Environment
+
+1. Navigate to the `config/` directory.
+2. Copy the `template.env` file:
+   ```
+   cp template.env .env
+   ```
+3. Open the newly created `.env` file in your preferred text editor.
+4. Fill in the values for each environment variable. Be sure to replace all placeholder values with your actual configuration details.
+5. Save the file.
+
+Remember to never commit your `.env` file to version control, as it may contain sensitive information. The `.gitignore` file is set up to exclude `.env` files by default.
 
 ### Example Configuration
 
 A typical configuration file might look like this:
 
 ```
+# DigitalOcean API Token
+DO_TOKEN=your_actual_digitalocean_api_token_here
+
+# Droplet Configuration
+DROPLET_NAME=my-awesome-droplet
+DROPLET_REGION=nyc1
+DROPLET_SIZE=s-1vcpu-1gb
+DROPLET_IMAGE=ubuntu-20-04-x64
+
+# Resource Monitoring
+MONITOR_WARNING_THRESHOLD=80
+MONITOR_CHECK_INTERVAL=60
+
+# Database Configuration (if applicable)
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=myapp_dev
-DB_USER=devuser
-DB_PASSWORD=secretpassword
+DB_NAME=my_project_db
+DB_USER=my_db_user
+DB_PASSWORD=my_secure_password
 
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-DEBUG=True
-LOG_LEVEL=DEBUG
-
-API_KEY=your_api_key_here
+# Other Configuration
+DEBUG=False
+LOG_LEVEL=INFO
 ```
 
 Modify these files to suit your project's needs. Be sure to keep sensitive information (like API keys and passwords) secure and never commit them to version control.
