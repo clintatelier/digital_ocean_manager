@@ -1,6 +1,6 @@
 # DigitalOcean Manager
 
-This project provides a comprehensive setup for managing various types of applications (web apps, static sites, and mobile apps) on DigitalOcean using a Kubernetes-based architecture. It automates many aspects of setup and deployment, but some manual steps are still required.
+This project provides a comprehensive setup for managing web applications and static sites on a single DigitalOcean droplet. It automates many aspects of setup and deployment, utilizing virtual environments for application isolation.
 
 ## Prerequisites
 
@@ -10,8 +10,6 @@ Before using this tool, you need to:
 2. Install the following on your local machine:
    - Python 3.7+
    - `doctl` (DigitalOcean command-line tool)
-   - `kubectl` (Kubernetes command-line tool)
-   - Docker
 
 ## Quick Start
 
@@ -30,8 +28,8 @@ Before using this tool, you need to:
    - Create a virtual environment
    - Install all required Python dependencies
    - Guide you through generating a DigitalOcean API token
-   - Help you set up a container registry
-   - Create a Kubernetes cluster
+   - Create a single DigitalOcean droplet
+   - Set up the droplet with necessary software (Python, Node.js, PHP, Apache, MySQL)
 
 4. Activate the virtual environment:
    - On Windows:
@@ -48,74 +46,87 @@ Before using this tool, you need to:
 ### Automated:
 - Virtual environment creation
 - Python dependency installation
-- Kubernetes cluster creation
-- Deployment of web apps, static sites, and mobile app builds
+- DigitalOcean droplet creation and initial setup
+- Deployment of web apps and static sites
+- Virtual environment management on the droplet
 - Gathering and outputting deployment information
 
 ### Manual (requires DigitalOcean web interface):
 - Account creation and payment setup
 - API token generation
-- Initial container registry setup
 - Resource monitoring and cost management
-
-## Version Control
-
-This project uses Git for version control. A `.gitignore` file has been included to prevent unnecessary files from being tracked. The `.gitignore` file excludes:
-
-- Virtual environment directories (venv/, env/)
-- Environment variable and API key files (*.env, .env)
-- Python-related files (__pycache__/, *.pyc, etc.)
-- OS-generated files (.DS_Store, Thumbs.db)
-- IDE-specific files (.vscode/, .idea/)
-- Other common files and directories that should not be version-controlled
-
-Make sure to review the `.gitignore` file and adjust it if needed for your specific project requirements.
 
 ## Usage
 
 After running the setup script and activating the virtual environment, you can use the following scripts to manage your applications:
 
-### Deploying Web Apps
+### Deploying Web Apps and Static Sites
 
-1. Prepare your web app in the `web_apps` directory
+1. Prepare your web app in the `web_apps` directory or your static site in the `static_sites` directory
 2. Run the deployment script:
    ```
    python scripts/deploy_web_app.py
    ```
-3. Follow the prompts to specify your app name and container registry
+3. Follow the prompts to specify your app name, type (web app or static site), and the droplet IP address
 4. After successful deployment, a JSON file with deployment information will be generated
 
-### Deploying Static Sites
+### Gathering Deployment Information
 
-1. Prepare your static site in the `static_sites` directory
-2. Run the deployment script:
+To collect information about your deployed applications:
+
+1. Run the gather deployment info script:
    ```
-   python scripts/deploy_static_site.py
+   python scripts/gather_deployment_info.py
    ```
-3. Follow the prompts to specify your site name and container registry
-4. After successful deployment, a JSON file with deployment information will be generated
+2. Follow the prompts to specify your app name, type, and the droplet IP address
+3. The script will generate a JSON file with detailed deployment information
 
-### Building Mobile Apps
+## VS Code Integration
 
-1. Prepare your mobile app in the `mobile_apps` directory
-2. Run the build script:
-   ```
-   python scripts/deploy_mobile_app.py
-   ```
-3. Follow the prompts to specify your app name and target platform (Android/iOS)
-4. Follow the provided instructions to distribute your app to the appropriate app store
-5. After successful build, a JSON file with deployment information will be generated
+For developers using Visual Studio Code, we've created a comprehensive guide on how to integrate this DigitalOcean Manager into your VS Code workflow. This guide covers:
 
-## Deployment Information
+- Setting up VS Code for remote development with your DigitalOcean droplet
+- Local development and testing processes
+- Syncing your local environment with the remote droplet
+- Deploying and managing your applications using VS Code
 
-After each successful deployment or build, the system generates a JSON file containing relevant deployment information. This file includes:
+To learn more about using this tool with VS Code, please refer to our [VS Code Workflow Integration Guide](vscode_workflow.md).
+
+## Virtual Environment Management
+
+The droplet is set up with a script to manage virtual environments for your applications. You can use this script via SSH to create, delete, or list virtual environments:
+
+- Create a new virtual environment:
+  ```
+  ssh root@<droplet_ip> '/usr/local/bin/manage_venv.sh create <app_name>'
+  ```
+
+- Delete a virtual environment:
+  ```
+  ssh root@<droplet_ip> '/usr/local/bin/manage_venv.sh delete <app_name>'
+  ```
+
+- List all virtual environments:
+  ```
+  ssh root@<droplet_ip> '/usr/local/bin/manage_venv.sh list'
+  ```
+
+## Deployment Information and Pipeline Integration
+
+The `{app_name}_deployment_info.json` file generated after deployment contains:
 
 - DigitalOcean API Token (securely stored)
-- Kubernetes cluster information
-- Application-specific details (name, type, registry, etc.)
-- Service information (for web apps and static sites)
+- Droplet information (IP address, OS)
+- Application-specific details (name, type, Apache configuration)
+- Virtual environment information (for web apps)
 
-The generated JSON file can be used by other tools or AI agents to manage and interact with the deployed applications. The file is named `{app_name}_deployment_info.json` and is saved in the same directory as the deployment scripts.
+You can use this information in your CI/CD pipelines for various tasks such as:
+
+1. Deploying updates
+2. Monitoring application status
+3. Managing resources and scaling
+
+Refer to the "Deployment Information and Pipeline Integration" section in the project documentation for detailed examples.
 
 ## Configuration Management
 
@@ -130,18 +141,20 @@ Modify these files to suit your project's needs.
 ## Best Practices and Tips
 
 1. Always use the virtual environment when working with this project
-2. Regularly update the virtual environment: `pip install --upgrade -r requirements.txt`
+2. Regularly update dependencies: `pip install --upgrade -r requirements.txt`
 3. Use version control (git) for your projects
-4. Regularly backup your DigitalOcean resources and databases
+4. Regularly backup your DigitalOcean droplet and databases
 5. Use meaningful names for your resources (apps, sites, etc.)
 6. Monitor your resource usage to optimize costs and performance
-7. Implement proper security measures, such as SSL certificates (automated with ingress)
-8. Keep your DigitalOcean API token and container registry credentials secure
+7. Implement proper security measures, such as SSL certificates
+8. Keep your DigitalOcean API token secure
 9. Securely manage the generated deployment information JSON files
 
 ## Maintenance
 
-Regularly update the scripts and Kubernetes manifests to ensure compatibility with the latest DigitalOcean API and Kubernetes versions. Check for updates to the required Python packages and Docker images used in your projects.
+- Regularly update the scripts to ensure compatibility with the latest DigitalOcean API
+- Keep your droplet's software up to date by regularly running system updates
+- Check for updates to the required Python packages used in your projects
 
 ## Support
 
@@ -153,28 +166,24 @@ This tool is not officially associated with DigitalOcean. Always refer to Digita
 
 ## Cost Considerations
 
-The cost of running your projects on DigitalOcean can vary based on your specific needs and usage. Here's a rough estimate for running multiple projects:
+Using a single DigitalOcean droplet can be more cost-effective than a Kubernetes cluster:
 
-1. Kubernetes Cluster: Starting at $30/month for a basic 3-node cluster
-2. Container Registry: $5/month for the basic plan
-3. Storage: $0.10/GB per month (e.g., $1 for 10GB)
-4. Bandwidth: $0.01/GB for outbound transfer (e.g., $10 for 1TB)
-5. Additional resources (e.g., CI/CD for mobile apps): Varies based on usage
+- Droplet: Starting at $5/month (1GB RAM, 1 vCPU, 25GB SSD)
+- Additional storage: From $10/month for 100GB block storage
+- Bandwidth: 1TB included, then $0.01/GB for outbound transfer
 
-Estimated total for a basic setup with multiple projects: $50-$100/month
+Estimated total for a basic setup with multiple projects: $10-$30/month
 
-Factors that can affect your costs:
-- Number and size of your Kubernetes nodes
-- Storage requirements
-- Bandwidth usage
-- Use of additional DigitalOcean services (e.g., managed databases, load balancers)
-- Frequency and duration of mobile app builds
+To optimize costs:
+1. Monitor resource usage in the DigitalOcean dashboard
+2. Choose an appropriate droplet size
+3. Optimize your applications for efficient resource use
+4. Use DigitalOcean's billing alerts
 
-To manage and optimize your costs:
-1. Regularly monitor your resource usage in the DigitalOcean dashboard
-2. Use appropriate sized resources for your needs
-3. Implement auto-scaling to handle traffic spikes efficiently
-4. Optimize your applications for resource usage
-5. Use DigitalOcean's billing alerts to stay informed about your spending
+Always review DigitalOcean's current pricing: https://www.digitalocean.com/pricing
 
-Remember to review DigitalOcean's current pricing as it may change over time: https://www.digitalocean.com/pricing
+## Version Control
+
+This project uses Git for version control. The included `.gitignore` file prevents tracking of unnecessary files. Review and adjust the `.gitignore` file as needed for your specific requirements.
+
+For the latest changes and updates, please refer to the CHANGELOG.md file in this repository.

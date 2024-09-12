@@ -1,8 +1,8 @@
-# DigitalOcean Manager: Final Project Summary
+# DigitalOcean Manager: Project Summary
 
 ## Overview
 
-The DigitalOcean Manager is a comprehensive solution for deploying and managing various types of applications (web apps, static sites, and mobile apps) using a Kubernetes-based architecture on DigitalOcean. This project provides a streamlined workflow for setting up infrastructure, building applications, and deploying them to a scalable and cost-effective Kubernetes cluster.
+The DigitalOcean Manager is a comprehensive solution for deploying and managing web applications and static sites using a single DigitalOcean droplet. This project provides a streamlined workflow for setting up infrastructure, deploying applications, and managing them on a cost-effective single-droplet setup.
 
 ## Current Project Structure
 
@@ -12,25 +12,18 @@ digital_ocean_manager/
 │   ├── development.env
 │   ├── staging.env
 │   └── production.env
-├── kubernetes/
-│   └── (Kubernetes manifest templates)
-├── mobile_apps/
-│   └── template_react_native_app.js
 ├── scripts/
-│   ├── deploy_mobile_app.py
-│   ├── deploy_static_site.py
 │   ├── deploy_web_app.py
-│   ├── initial_setup.py
-│   └── manage_resources.py
+│   ├── gather_deployment_info.py
+│   └── initial_setup.py
 ├── static_sites/
-│   ├── Dockerfile.template
-│   └── index.html
+│   └── (static site files)
 ├── web_apps/
-│   ├── Dockerfile.template
-│   └── template_web_app.py
+│   └── (web application files)
 ├── CHANGELOG.md
 ├── README.md
 ├── requirements.txt
+├── setup.py
 └── project_summary.md (this file)
 ```
 
@@ -38,59 +31,62 @@ digital_ocean_manager/
 
 1. **config/**: Contains environment-specific configuration files for development, staging, and production.
 
-2. **kubernetes/**: Contains Kubernetes manifest templates for deployments, services, and ingress resources.
+2. **scripts/**:
+   - `initial_setup.py`: Sets up the initial DigitalOcean droplet and configures it with necessary software.
+   - `deploy_web_app.py`: Deploys web applications and static sites to the DigitalOcean droplet.
+   - `gather_deployment_info.py`: Collects and outputs deployment information for each application.
 
-3. **mobile_apps/**: Includes a template for React Native mobile applications.
+3. **static_sites/**: Directory for static website files.
 
-4. **scripts/**:
-   - `deploy_mobile_app.py`: Builds mobile applications and prepares them for distribution to app stores.
-   - `deploy_static_site.py`: Deploys static websites to the Kubernetes cluster.
-   - `deploy_web_app.py`: Deploys web applications to the Kubernetes cluster.
-   - `initial_setup.py`: Sets up the initial DigitalOcean Kubernetes cluster and container registry.
-   - `manage_resources.py`: Manages DigitalOcean resources (Kubernetes resources, databases, etc.).
+4. **web_apps/**: Directory for web application files.
 
-5. **static_sites/**: Contains a template and Dockerfile for static websites.
+5. **CHANGELOG.md**: Documents the project's version history and changes.
 
-6. **web_apps/**: Includes a template and Dockerfile for web applications.
+6. **README.md**: Provides an overview and usage instructions for the project.
 
-7. **CHANGELOG.md**: Documents the project's version history and changes.
+7. **requirements.txt**: Lists the Python dependencies required for the project.
 
-8. **README.md**: Provides an overview and usage instructions for the project.
-
-9. **requirements.txt**: Lists the Python dependencies required for the project.
+8. **setup.py**: Handles the initial setup process, including virtual environment creation and dependency installation.
 
 ## How to Use the DigitalOcean Manager
 
 1. **Initial Setup**:
    - Clone the repository and navigate to the project directory.
-   - Install dependencies: `pip install -r requirements.txt`
-   - Set up your DigitalOcean API token as an environment variable.
-   - Run `python scripts/initial_setup.py` to create the Kubernetes cluster and container registry.
+   - Run `python setup.py` to set up the virtual environment and install dependencies.
+   - Follow the prompts to create and configure your DigitalOcean droplet.
 
-2. **Deploying Web Applications**:
-   - Prepare your web app in the `web_apps` directory.
+2. **Deploying Web Applications and Static Sites**:
+   - Prepare your web app in the `web_apps` directory or your static site in the `static_sites` directory.
    - Run `python scripts/deploy_web_app.py` and follow the prompts.
 
-3. **Deploying Static Sites**:
-   - Prepare your static site in the `static_sites` directory.
-   - Run `python scripts/deploy_static_site.py` and follow the prompts.
+3. **Gathering Deployment Information**:
+   - Use `python scripts/gather_deployment_info.py` to collect and output deployment information for your applications.
 
-4. **Building Mobile Applications**:
-   - Prepare your mobile app in the `mobile_apps` directory.
-   - Run `python scripts/deploy_mobile_app.py` and follow the prompts.
-   - Follow the provided instructions to distribute your app to the appropriate app store.
+## Key Features
 
-5. **Managing Resources**:
-   - Use `python scripts/manage_resources.py` to manage Kubernetes resources and other DigitalOcean services.
+1. Single-droplet architecture for cost-effective hosting
+2. Support for both web applications and static sites
+3. Virtual environment management for application isolation
+4. Automated Apache configuration for each deployed application
+5. Comprehensive deployment information gathering
+6. User-friendly setup and deployment processes with improved error handling and guidance
 
 ## Next Steps for Users
 
 1. Familiarize yourself with the project structure and scripts.
 2. Set up your DigitalOcean account and API token.
-3. Run the initial setup script to create your Kubernetes cluster.
+3. Run the setup script to create your droplet and configure the environment.
 4. Deploy a sample application (web app or static site) to test the setup.
-5. Customize the templates and configurations as needed for your specific projects.
-6. Regularly check the CHANGELOG.md for updates and new features.
-7. Contribute to the project by suggesting improvements or reporting issues.
+5. Use the gather_deployment_info.py script to collect information about your deployments.
+6. Customize the templates and configurations as needed for your specific projects.
+7. Regularly check the CHANGELOG.md for updates and new features.
 
-By following these steps and utilizing the provided scripts, you can efficiently manage your DigitalOcean resources and deploy various types of applications using a Kubernetes-based architecture.
+By following these steps and utilizing the provided scripts, you can efficiently manage your DigitalOcean resources and deploy various types of applications using a single-droplet architecture. This approach offers improved resource utilization and cost-effectiveness compared to more complex setups like Kubernetes clusters.
+
+## Future Improvements
+
+Refer to the "Recommendations for Future Improvements" section in the CHANGELOG.md for potential enhancements to the project.
+
+## Support and Contributions
+
+If you encounter any issues or have suggestions for improvements, please open an issue in the project's repository. Contributions to enhance the functionality or documentation of the DigitalOcean Manager are welcome.
