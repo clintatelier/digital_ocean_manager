@@ -1,66 +1,121 @@
-# DigitalOcean Manager
+# Digital Ocean Manager
 
-This project provides a flexible setup for managing various DigitalOcean resources, including droplets (virtual machines), databases, and firewalls. It allows for easy setup and management of a complete infrastructure under a single DigitalOcean account.
+This project provides a comprehensive setup for managing various types of applications (web apps, mobile apps, and static sites) on DigitalOcean. It includes scripts for initial setup, resource management, and deployment for different project types.
 
 ## Setup
 
-1. Install the required dependencies:
+1. Clone this repository:
    ```
-   pip install digitalocean
+   git clone https://github.com/yourusername/digital_ocean_manager.git
+   cd digital_ocean_manager
    ```
 
-2. Ensure you have a DigitalOcean account and an API token. You can create an API token in the DigitalOcean control panel under API > Tokens/Keys.
+2. Install the required dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+
+3. Set up your DigitalOcean API token:
+   - Create an API token in the DigitalOcean control panel (API > Tokens/Keys)
+   - Set the token as an environment variable:
+     ```
+     export DO_TOKEN=your_digitalocean_api_token
+     ```
+
+## Directory Structure
+
+- `config/`: Configuration files for different environments
+- `scripts/`: Utility scripts for managing DigitalOcean resources and deployments
+- `web_apps/`: Templates and resources for web applications
+- `mobile_apps/`: Templates and resources for mobile applications
+- `static_sites/`: Templates and resources for static websites
 
 ## Usage
 
 ### Initial Setup
 
-1. Run the `initial_setup.py` script:
-   ```
-   python initial_setup.py
-   ```
-2. Enter your DigitalOcean API token when prompted.
-3. This script will create:
-   - A droplet (virtual machine) that can host websites, applications, or control panels
-   - A PostgreSQL database cluster
-   - A firewall to secure your resources
+Run the initial setup script to create your DigitalOcean infrastructure:
+
+```
+python scripts/initial_setup.py
+```
+
+This script will create a droplet, a database cluster, and set up a firewall.
 
 ### Managing Resources
 
-1. Run the `manage_resources.py` script:
+Use the resource management script to list, create, or delete DigitalOcean resources:
+
+```
+python scripts/manage_resources.py
+```
+
+Follow the prompts to perform various actions on your DigitalOcean resources.
+
+### Web Apps
+
+1. Copy the web app template:
    ```
-   python manage_resources.py
+   cp web_apps/template_web_app.py web_apps/your_app_name.py
    ```
-2. Enter your DigitalOcean API token when prompted.
-3. Choose from the following options:
-   - List Droplets
-   - List Databases
-   - Create Droplet
-   - Create Database
-   - Delete Droplet
-   - Delete Database
 
-## Features
+2. Modify `your_app_name.py` as needed for your specific web application.
 
-- **Droplet Management**: Create, list, and delete droplets (virtual machines) that can host websites, applications, or control panels.
-- **Database Management**: Create, list, and delete databases within your PostgreSQL cluster.
-- **Firewall Setup**: Automatically configure a firewall to secure your infrastructure.
-- **Centralized Management**: Manage all your DigitalOcean resources from a single interface.
+3. Deploy your web app:
+   ```
+   python scripts/deploy_web_app.py
+   ```
 
-## Best Practices
+### Mobile Apps
 
-- Keep your API token secure and never share it publicly.
-- Regularly review and update your resources to ensure optimal performance and security.
-- Use meaningful names for your droplets and databases to easily identify their purposes.
-- Monitor your resource usage to optimize costs and performance.
+1. Copy the React Native template:
+   ```
+   cp mobile_apps/template_react_native_app.js mobile_apps/your_app_name/App.js
+   ```
 
-## Maintenance
+2. Modify `App.js` and add other necessary files for your mobile app.
 
-Regularly update the scripts to ensure compatibility with the latest DigitalOcean API. Check for updates to the `python-digitalocean` library and other dependencies.
+3. Build and deploy your mobile app:
+   ```
+   python scripts/deploy_mobile_app.py
+   ```
+
+### Static Sites
+
+1. Copy the static site template:
+   ```
+   cp static_sites/index.html static_sites/your_site_name/index.html
+   ```
+
+2. Modify `index.html` and add other static assets as needed.
+
+3. Deploy your static site:
+   ```
+   python scripts/deploy_static_site.py
+   ```
+
+## Configuration Management
+
+Environment-specific configurations are stored in the `config/` directory:
+
+- `development.env`: Development environment configuration
+- `staging.env`: Staging environment configuration
+- `production.env`: Production environment configuration
+
+Modify these files to suit your project's needs.
+
+## Best Practices and Tips
+
+1. Always use version control (git) for your projects.
+2. Regularly backup your DigitalOcean resources and databases.
+3. Use meaningful names for your droplets, databases, and other resources.
+4. Monitor your resource usage to optimize costs and performance.
+5. Implement proper security measures, such as firewalls and SSL certificates.
+6. Keep your DigitalOcean API token secure and never commit it to version control.
 
 ## Support
 
-If you encounter any issues or have questions about using this DigitalOcean Manager, please open an issue in this repository or contact your system administrator.
+If you encounter any issues or have questions about using this Digital Ocean Manager, please open an issue in this repository or contact your system administrator.
 
 ## Disclaimer
 
