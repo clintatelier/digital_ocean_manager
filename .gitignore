@@ -3,7 +3,9 @@ venv/
 env/
 
 # Environment variables and API keys
-
+.env
+*.env
+config/.env
 
 # Python
 __pycache__/
@@ -12,6 +14,8 @@ __pycache__/
 
 # Logs
 *.log
+setup.log
+resource_monitoring.log
 
 # OS generated files
 .DS_Store
@@ -44,3 +48,15 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Deployment information files
+*_deployment_info.json
+
+# DigitalOcean specific
+.digitalocean/
+
+# Backup files
+*.bak
+
+# Local configuration file
+config.local.ini

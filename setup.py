@@ -64,6 +64,9 @@ def get_do_token():
 def run_initial_setup(venv_python):
     print("\nRunning initial droplet setup...")
     try:
+        dry_run = input("Do you want to perform a dry run? (yes/no): ").lower() == 'yes'
+        if dry_run:
+            print("Performing dry run. No actual resources will be created or modified.")
         subprocess.run([venv_python, 'scripts/initial_setup.py'], check=True)
     except subprocess.CalledProcessError:
         print("Error during initial setup. Please check the error messages above and try again.")
@@ -108,8 +111,16 @@ def main():
     print("   - Deploy a project: python scripts/deploy_web_app.py")
     print("   - Manage DigitalOcean credentials: ssh root@<droplet_ip> '/usr/local/bin/manage_do_credentials.sh [set|get|delete] <project_name> [do_token]'")
     print("4. Gather deployment information: python scripts/gather_deployment_info.py")
+    print("5. Monitor resource usage: python scripts/monitor_resources.py")
     print("\nRemember to monitor your resource usage and costs through the DigitalOcean dashboard:")
     print("https://cloud.digitalocean.com/dashboard")
+    
+    print("\nNew features:")
+    print("- Comprehensive error handling and logging: Check setup.log and resource_monitoring.log for detailed information.")
+    print("- Resource cleanup mechanism: In case of setup failure, you'll be offered to clean up any created resources.")
+    print("- Dry run mode: Allows you to see what actions would be taken without actually creating or modifying resources.")
+    print("- Step-by-step execution with confirmation: The setup process now proceeds step-by-step, asking for confirmation before each major action.")
+    print("- Resource usage monitoring: Use the new monitor_resources.py script to continuously monitor CPU, memory, and disk usage on your droplet.")
     
     print("\nIf you need any assistance, please refer to the README.md file or contact support.")
 

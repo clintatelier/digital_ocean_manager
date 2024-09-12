@@ -1,6 +1,6 @@
 # DigitalOcean Manager
 
-! This project provides a comprehensive setup for managing multiple web applications and static sites on a single DigitalOcean droplet. It automates many aspects of setup, deployment, and management, utilizing project-specific environments for application isolation.
+This project provides a comprehensive setup for managing multiple web applications and static sites on a single DigitalOcean droplet. It automates many aspects of setup, deployment, and management, utilizing project-specific environments for application isolation.
 
 ## Prerequisites
 
@@ -43,6 +43,20 @@ Before using this tool, you need to:
      source venv/bin/activate
      ```
 
+## New Features and Improvements
+
+We've made several enhancements to improve the reliability, safety, and usability of the DigitalOcean Manager:
+
+1. **Comprehensive Error Handling and Logging**: All scripts now include robust error handling and detailed logging. Logs are saved in `setup.log` for the setup process and `resource_monitoring.log` for resource monitoring.
+
+2. **Resource Cleanup Mechanism**: In case of setup failure, the script now offers an option to clean up any created resources, preventing orphaned resources in your DigitalOcean account.
+
+3. **Dry Run Mode**: You can now perform a dry run of the setup process. This allows you to see what actions would be taken without actually creating or modifying any resources.
+
+4. **Step-by-Step Execution with Confirmation**: The setup process now proceeds step-by-step, asking for confirmation before each major action. This gives you more control over the setup process.
+
+5. **Resource Usage Monitoring**: We've added a new script (`scripts/monitor_resources.py`) that continuously monitors CPU, memory, and disk usage on your droplet. It logs this information and provides warnings if usage exceeds specified thresholds.
+
 ## What's Automated vs. Manual
 
 ### Automated:
@@ -54,6 +68,7 @@ Before using this tool, you need to:
 - DigitalOcean credentials management for each project
 - Gathering and outputting comprehensive deployment information
 - Setting up DigitalOcean monitoring and management tools
+- Resource usage monitoring
 
 ### Manual (requires DigitalOcean web interface):
 - Account creation and payment setup
@@ -113,6 +128,17 @@ To collect detailed information about your deployed projects:
    ```
 2. Follow the prompts to specify your project name, type, and the droplet IP address
 3. The script will generate a JSON file with comprehensive deployment information
+
+### Monitoring Resource Usage
+
+To monitor resource usage on your droplet:
+
+1. Run the resource monitoring script:
+   ```
+   python scripts/monitor_resources.py
+   ```
+2. The script will continuously monitor CPU, memory, and disk usage, logging the information and providing warnings if usage exceeds specified thresholds
+3. You can customize the warning threshold and check interval in the script
 
 ## Project Management
 
@@ -267,6 +293,8 @@ Modify these files to suit your project's needs. Be sure to keep sensitive infor
 10. Regularly review and update Apache configurations for optimal performance
 11. Use the comprehensive deployment information for troubleshooting and maintenance
 12. Utilize DigitalOcean's built-in monitoring tools to track droplet performance
+13. Take advantage of the new dry run mode when testing changes
+14. Pay attention to resource usage warnings from the monitoring script
 
 ## Maintenance
 
@@ -276,6 +304,7 @@ Modify these files to suit your project's needs. Be sure to keep sensitive infor
 - Periodically review and optimize your deployed projects for better resource utilization
 - Regularly review and update the gather_deployment_info.py script to ensure it captures all necessary information
 - Monitor and manage your droplet using DigitalOcean's dashboard and CLI tools
+- Review logs (`setup.log` and `resource_monitoring.log`) regularly for any issues or warnings
 
 ## Support
 
@@ -302,7 +331,7 @@ Additional costs to consider:
 Estimated total for a basic setup with multiple projects: $10-$30 per month
 
 To optimize costs:
-1. Monitor resource usage in the DigitalOcean dashboard
+1. Monitor resource usage in the DigitalOcean dashboard and using the provided monitoring script
 2. Choose an appropriate droplet size based on your needs
 3. Optimize your projects for efficient resource use
 4. Use DigitalOcean's billing alerts to stay informed about your spending
@@ -314,4 +343,3 @@ Always review DigitalOcean's current pricing: https://www.digitalocean.com/prici
 This project uses Git for version control. The included `.gitignore` file prevents tracking of unnecessary files. Review and adjust the `.gitignore` file as needed for your specific requirements.
 
 For the latest changes and updates, please refer to the CHANGELOG.md file in this repository.
-

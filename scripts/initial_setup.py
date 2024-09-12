@@ -1,13 +1,26 @@
 import os
 import subprocess
 import time
+import logging
 from digitalocean import Manager, Droplet, SSHKey, APIError
 
-def create_droplet(token, droplet_name, region, size, image):
+# Set up logging
+logging.basicConfig(filename='setup.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+class SetupError(Exception):
+    """Custom exception for setup errors"""
+    pass
+
+def create_droplet(token, droplet_name, region, size, image, dry_run=False):
     manager = Manager(token=token)
     
-    print(f"Creating droplet '{droplet_name}'...")
+    logging.info(f"Creating droplet '{droplet_name}'...")
     try:
+        if dry_run:
+            logging.info(f"Dry run: Would create droplet '{droplet_name}' in region {region} with size {size} and image {image}")
+            return None
+
         # Create the Droplet with monitoring enabled
         droplet = Droplet(
             token=token,
@@ -23,64 +36,58 @@ def create_droplet(token, droplet_name, region, size, image):
         droplet.create()
         
         # Wait for the droplet to be ready
-        print("Waiting for the droplet to be ready. This may take a few minutes...")
+        logging.info("Waiting for the droplet to be ready. This may take a few minutes...")
         while droplet.status != 'active':
             time.sleep(30)
             droplet.load()
         
-        print(f"Droplet '{droplet_name}' created successfully with monitoring enabled.")
+        logging.info(f"Droplet '{droplet_name}' created successfully with monitoring enabled.")
         return droplet
     except APIError as e:
-        print(f"Error creating droplet: {e}")
-        return None
+        logging.error(f"Error creating droplet: {e}")
+        raise SetupError(f"Failed to create droplet: {e}")
 
-def setup_droplet(droplet):
-    print("Setting up the droplet with necessary software...")
-    # Install necessary software and set up the environment
+def setup_droplet(droplet, dry_run=False):
+    logging.info("Setting up the droplet with necessary software...")
     commands = [
         "apt update && apt upgrade -y",
         "apt install -y python3-venv nodejs npm php",
-        "npm install -g n && n lts",  # Install Node.js version manager
-        "apt install -y apache2",  # Install Apache for hosting static sites
+        "npm install -g n && n lts",
+        "apt install -y apache2",
         "systemctl enable apache2",
-        "apt install -y mysql-server",  # Install MySQL for database management
+        "apt install -y mysql-server",
         "systemctl enable mysql",
-        "apt install -y php-mysql",  # Install PHP MySQL extension
+        "apt install -y php-mysql",
         "systemctl restart apache2",
-        # Install DigitalOcean monitoring agent
         "curl -sSL https://agent.digitalocean.com/install.sh | sh",
-        # Install DigitalOcean CLI (doctl) for management
         "snap install doctl",
-        # Install DigitalOcean Metrics Agent for advanced metrics
         "curl -sSL https://repos.insights.digitalocean.com/install.sh | sudo bash",
-        # Install Docker for containerization
         "apt install -y docker.io",
         "systemctl enable docker",
-        # Install Python package manager
         "apt install -y python3-pip",
-        # Install Git for version control
         "apt install -y git",
     ]
     
     for command in commands:
         try:
-            subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", command], check=True)
+            if dry_run:
+                logging.info(f"Dry run: Would execute command: {command}")
+            else:
+                subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", command], check=True)
+                logging.info(f"Successfully executed command: {command}")
         except subprocess.CalledProcessError as e:
-            print(f"Error executing command '{command}': {e}")
-            return False
+            logging.error(f"Error executing command '{command}': {e}")
+            raise SetupError(f"Failed to set up droplet: {e}")
     
-    print("Droplet setup completed successfully.")
+    logging.info("Droplet setup completed successfully.")
     return True
 
-def setup_project_management(droplet):
-    print("Setting up project management tools...")
+def setup_project_management(droplet, dry_run=False):
+    logging.info("Setting up project management tools...")
     commands = [
-        # Create directory structure
         "mkdir -p /opt/projects",
         "mkdir -p /opt/venvs",
         "mkdir -p /opt/configs",
-        
-        # Create project management script
         """cat << EOF > /usr/local/bin/manage_project.sh
 #!/bin/bash
 
@@ -130,18 +137,21 @@ EOF""",
     
     for command in commands:
         try:
-            subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", command], check=True)
+            if dry_run:
+                logging.info(f"Dry run: Would execute command: {command}")
+            else:
+                subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", command], check=True)
+                logging.info(f"Successfully executed command: {command}")
         except subprocess.CalledProcessError as e:
-            print(f"Error executing command: {e}")
-            return False
+            logging.error(f"Error executing command: {e}")
+            raise SetupError(f"Failed to set up project management: {e}")
     
-    print("Project management setup completed successfully.")
+    logging.info("Project management setup completed successfully.")
     return True
 
-def setup_do_credentials(droplet):
-    print("Setting up DigitalOcean credentials management...")
+def setup_do_credentials(droplet, dry_run=False):
+    logging.info("Setting up DigitalOcean credentials management...")
     commands = [
-        # Create credentials management script
         """cat << EOF > /usr/local/bin/manage_do_credentials.sh
 #!/bin/bash
 
@@ -187,22 +197,41 @@ EOF""",
     
     for command in commands:
         try:
-            subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", command], check=True)
+            if dry_run:
+                logging.info(f"Dry run: Would execute command: {command}")
+            else:
+                subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", f"root@{droplet.ip_address}", command], check=True)
+                logging.info(f"Successfully executed command: {command}")
         except subprocess.CalledProcessError as e:
-            print(f"Error executing command: {e}")
-            return False
+            logging.error(f"Error executing command: {e}")
+            raise SetupError(f"Failed to set up DigitalOcean credentials management: {e}")
     
-    print("DigitalOcean credentials management setup completed successfully.")
+    logging.info("DigitalOcean credentials management setup completed successfully.")
     return True
 
+def cleanup_resources(droplet):
+    logging.info("Cleaning up resources...")
+    try:
+        droplet.destroy()
+        logging.info(f"Droplet {droplet.name} has been destroyed.")
+    except APIError as e:
+        logging.error(f"Error destroying droplet: {e}")
+
 def main():
+    logging.info("Starting DigitalOcean Droplet Setup")
     print("Welcome to the DigitalOcean Droplet Setup!")
     print("This script will guide you through creating and setting up your droplet for multi-project hosting.")
     
     token = os.getenv("DO_TOKEN")
     if not token:
+        logging.error("DigitalOcean API token not found")
         print("DigitalOcean API token not found. Please make sure you've set the DO_TOKEN environment variable.")
         return
+
+    dry_run = input("Do you want to perform a dry run? (yes/no): ").lower() == 'yes'
+    if dry_run:
+        logging.info("Performing dry run")
+        print("Performing dry run. No actual resources will be created or modified.")
 
     droplet_name = input("Enter a name for your DigitalOcean droplet: ")
     
@@ -228,32 +257,43 @@ def main():
     print("ubuntu-20-04-x64 - Ubuntu 20.04 LTS x64")
     image = input("Enter the image for the droplet (press Enter for ubuntu-20-04-x64): ") or "ubuntu-20-04-x64"
     
-    droplet = create_droplet(token, droplet_name, region, size, image)
-    if not droplet:
-        print("Failed to create droplet. Please check your inputs and try again.")
-        return
+    try:
+        droplet = create_droplet(token, droplet_name, region, size, image, dry_run)
+        if not dry_run and droplet:
+            if input("Droplet created. Continue with setup? (yes/no): ").lower() != 'yes':
+                raise SetupError("Setup cancelled by user")
 
-    if not setup_droplet(droplet):
-        print("Failed to set up droplet. Please check the error messages above and try again.")
-        return
+            if setup_droplet(droplet, dry_run):
+                if input("Droplet setup complete. Set up project management? (yes/no): ").lower() != 'yes':
+                    raise SetupError("Setup cancelled by user")
 
-    if not setup_project_management(droplet):
-        print("Failed to set up project management. Please check the error messages above and try again.")
-        return
+                if setup_project_management(droplet, dry_run):
+                    if input("Project management setup complete. Set up DigitalOcean credentials management? (yes/no): ").lower() != 'yes':
+                        raise SetupError("Setup cancelled by user")
 
-    if not setup_do_credentials(droplet):
-        print("Failed to set up DigitalOcean credentials management. Please check the error messages above and try again.")
-        return
-    
-    print("\nInitial setup complete!")
-    print(f"Your droplet is ready to use at IP: {droplet.ip_address}")
-    print("\nTo manage projects on your droplet, use the following command:")
-    print(f"ssh root@{droplet.ip_address} '/usr/local/bin/manage_project.sh [create|delete|list] [project_name] [project_type]'")
-    print("\nTo manage DigitalOcean credentials for projects, use the following command:")
-    print(f"ssh root@{droplet.ip_address} '/usr/local/bin/manage_do_credentials.sh [set|get|delete] [project_name] [do_token]'")
-    print("\nDigitalOcean monitoring and management tools have been enabled for your droplet.")
-    print("You can view monitoring data and manage your droplet in the DigitalOcean dashboard.")
-    print("\nPlease refer to the README.md and droplet_monitoring.md files for more information on how to use, monitor, and manage your new multi-project droplet.")
+                    if setup_do_credentials(droplet, dry_run):
+                        logging.info("Initial setup complete")
+                        print("\nInitial setup complete!")
+                        print(f"Your droplet is ready to use at IP: {droplet.ip_address}")
+                        print("\nTo manage projects on your droplet, use the following command:")
+                        print(f"ssh root@{droplet.ip_address} '/usr/local/bin/manage_project.sh [create|delete|list] [project_name] [project_type]'")
+                        print("\nTo manage DigitalOcean credentials for projects, use the following command:")
+                        print(f"ssh root@{droplet.ip_address} '/usr/local/bin/manage_do_credentials.sh [set|get|delete] [project_name] [do_token]'")
+                        print("\nDigitalOcean monitoring and management tools have been enabled for your droplet.")
+                        print("You can view monitoring data and manage your droplet in the DigitalOcean dashboard.")
+                        print("\nPlease refer to the README.md and droplet_monitoring.md files for more information on how to use, monitor, and manage your new multi-project droplet.")
+    except SetupError as e:
+        logging.error(f"Setup failed: {e}")
+        print(f"Setup failed: {e}")
+        if not dry_run and droplet:
+            if input("Do you want to clean up created resources? (yes/no): ").lower() == 'yes':
+                cleanup_resources(droplet)
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        print(f"An unexpected error occurred: {e}")
+        if not dry_run and droplet:
+            if input("Do you want to clean up created resources? (yes/no): ").lower() == 'yes':
+                cleanup_resources(droplet)
 
 if __name__ == "__main__":
     main()
