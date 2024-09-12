@@ -2,6 +2,7 @@ import os
 import subprocess
 import yaml
 from kubernetes import client, config
+from gather_deployment_info import gather_and_output_info
 
 def build_and_push_image(app_name, registry):
     # Build the Docker image
@@ -67,6 +68,11 @@ def deploy_web_app(app_name, registry):
         apply_kubernetes_manifests(app_name)
 
         print(f"Web app {app_name} deployed successfully to Kubernetes cluster")
+
+        # Gather and output deployment information
+        output_file = gather_and_output_info(app_name, "web_app", registry)
+        print(f"Deployment information saved to {output_file}")
+
     except subprocess.CalledProcessError as e:
         print(f"Error deploying web app: {e}")
     except Exception as e:

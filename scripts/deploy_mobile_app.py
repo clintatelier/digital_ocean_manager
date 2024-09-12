@@ -1,6 +1,7 @@
 import os
 import subprocess
 import platform
+from gather_deployment_info import gather_and_output_info
 
 def build_android_app(app_name):
     os.chdir(f"../mobile_apps/{app_name}")
@@ -25,7 +26,7 @@ def build_ios_app(app_name):
     subprocess.run(["npm", "install"], check=True)
     
     # Build iOS app
-    subprocess.run(["xcodebuild", "-workspace", "ios/{app_name}.xcworkspace", "-scheme", app_name, "-configuration", "Release", "-archivePath", f"{app_name}.xcarchive", "archive"], check=True)
+    subprocess.run(["xcodebuild", "-workspace", f"ios/{app_name}.xcworkspace", "-scheme", app_name, "-configuration", "Release", "-archivePath", f"{app_name}.xcarchive", "archive"], check=True)
     
     print(f"iOS app archived for {app_name}")
     print(f"Archive location: ./{app_name}.xcarchive")
@@ -56,6 +57,11 @@ def deploy_mobile_app(app_name, platform):
         prepare_for_distribution(app_name, platform)
 
         print(f"\nMobile app {app_name} for {platform} has been built and is ready for distribution")
+
+        # Gather and output deployment information
+        output_file = gather_and_output_info(app_name, f"mobile_app_{platform.lower()}")
+        print(f"Deployment information saved to {output_file}")
+
     except subprocess.CalledProcessError as e:
         print(f"Error building mobile app: {e}")
     except Exception as e:

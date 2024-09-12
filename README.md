@@ -50,6 +50,7 @@ Before using this tool, you need to:
 - Python dependency installation
 - Kubernetes cluster creation
 - Deployment of web apps, static sites, and mobile app builds
+- Gathering and outputting deployment information
 
 ### Manual (requires DigitalOcean web interface):
 - Account creation and payment setup
@@ -82,6 +83,7 @@ After running the setup script and activating the virtual environment, you can u
    python scripts/deploy_web_app.py
    ```
 3. Follow the prompts to specify your app name and container registry
+4. After successful deployment, a JSON file with deployment information will be generated
 
 ### Deploying Static Sites
 
@@ -91,6 +93,7 @@ After running the setup script and activating the virtual environment, you can u
    python scripts/deploy_static_site.py
    ```
 3. Follow the prompts to specify your site name and container registry
+4. After successful deployment, a JSON file with deployment information will be generated
 
 ### Building Mobile Apps
 
@@ -101,6 +104,18 @@ After running the setup script and activating the virtual environment, you can u
    ```
 3. Follow the prompts to specify your app name and target platform (Android/iOS)
 4. Follow the provided instructions to distribute your app to the appropriate app store
+5. After successful build, a JSON file with deployment information will be generated
+
+## Deployment Information
+
+After each successful deployment or build, the system generates a JSON file containing relevant deployment information. This file includes:
+
+- DigitalOcean API Token (securely stored)
+- Kubernetes cluster information
+- Application-specific details (name, type, registry, etc.)
+- Service information (for web apps and static sites)
+
+The generated JSON file can be used by other tools or AI agents to manage and interact with the deployed applications. The file is named `{app_name}_deployment_info.json` and is saved in the same directory as the deployment scripts.
 
 ## Configuration Management
 
@@ -122,6 +137,7 @@ Modify these files to suit your project's needs.
 6. Monitor your resource usage to optimize costs and performance
 7. Implement proper security measures, such as SSL certificates (automated with ingress)
 8. Keep your DigitalOcean API token and container registry credentials secure
+9. Securely manage the generated deployment information JSON files
 
 ## Maintenance
 

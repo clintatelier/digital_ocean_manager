@@ -2,6 +2,7 @@ import os
 import subprocess
 import yaml
 from kubernetes import client, config
+from gather_deployment_info import gather_and_output_info
 
 def build_and_push_image(site_name, registry):
     # Build the Docker image
@@ -105,6 +106,11 @@ def deploy_static_site(site_name, registry):
 
         print(f"Static site {site_name} deployed successfully to Kubernetes cluster")
         print(f"Access your site at: https://{site_name}.example.com")
+
+        # Gather and output deployment information
+        output_file = gather_and_output_info(site_name, "static_site", registry)
+        print(f"Deployment information saved to {output_file}")
+
     except subprocess.CalledProcessError as e:
         print(f"Error deploying static site: {e}")
     except Exception as e:
