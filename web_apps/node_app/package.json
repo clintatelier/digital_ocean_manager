@@ -1,0 +1,20 @@
+{
+  "name": "digital-ocean-manager-node-app",
+  "version": "1.0.0",
+  "description": "Node.js application template for DigitalOcean Manager",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.12.3",
+    "express-session": "^1.17.1",
+    "passport": "^0.4.1",
+    "tailwindcss": "^2.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
